@@ -1,0 +1,47 @@
+#!/bin/sh
+set -eu
+PKG_DIR="/var/packages/OTPManager"
+VAR_DIR="${PKG_DIR}/var"
+TARGET="${SYNOPKG_PKGDEST:-${PKG_DIR}/target}"
+ENABLED="${VAR_DIR}/enabled"
+RUN_PY="${TARGET}/bin/run-python"
+
+_fix_data_perms() {
+  mkdir -p "${VAR_DIR}"
+  chown -R OTPManager:http "${VAR_DIR}" 2>/dev/null || true
+  chmod 770 "${VAR_DIR}" || true
+  find "${VAR_DIR}" -type f -exec chmod 660 {} \; 2>/dev/null || true
+}
+
+case "$1" in
+  start)
+    _fix_data_perms
+    if [ -x "${RUN_PY}" ]; then
+      OTPMANAGER_DATA_DIR="${VAR_DIR}" OTPMANAGER_SKIP_DSM_AUTH=1 OTPMANAGER_DEV_USER=start \
+        "${RUN_PY}" -c 'from otpmanager.service import OTPService; from cryptography.hazmat.primitives.ciphers.aead import AESGCM; AESGCM(b"0"*32); OTPService({}).set_enabled(True); print("started")'
+    else
+      touch "${ENABLED}"
+      chown OTPManager:http "${ENABLED}" 2>/dev/null || true
+      chmod 660 "${ENABLED}" 2>/dev/null || true
+    fi
+    _fix_data_perms
+    exit 0
+    ;;
+  stop)
+    if [ -x "${RUN_PY}" ]; then
+      OTPMANAGER_DATA_DIR="${VAR_DIR}" OTPMANAGER_SKIP_DSM_AUTH=1 OTPMANAGER_DEV_USER=stop \
+        "${RUN_PY}" -c 'from otpmanager.service import OTPService; from otpmanager.db import now; svc=OTPService({}); svc.set_enabled(False); conn=svc.db.connect(); conn.execute("UPDATE sessions SET revoked_at=? WHERE revoked_at IS NULL", (now(),)); conn.close(); print("stopped")' || true
+    fi
+    rm -f "${ENABLED}"
+    exit 0
+    ;;
+  status)
+    if [ -f "${ENABLED}" ] && [ -d "${TARGET}" ]; then
+      exit 0
+    fi
+    exit 3
+    ;;
+  *)
+    exit 1
+    ;;
+esac

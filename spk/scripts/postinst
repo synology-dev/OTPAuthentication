@@ -1,0 +1,27 @@
+#!/bin/sh
+set -eu
+PKG_DIR="/var/packages/OTPManager"
+VAR_DIR="${PKG_DIR}/var"
+TARGET="${SYNOPKG_PKGDEST:-${PKG_DIR}/target}"
+
+mkdir -p "${VAR_DIR}"
+# Package scripts run as OTPManager; DSM synoscgi executes ui/*.cgi as user `http`.
+chown -R OTPManager:http "${VAR_DIR}" 2>/dev/null || chown -R OTPManager:OTPManager "${VAR_DIR}" 2>/dev/null || true
+chmod 770 "${VAR_DIR}" || true
+
+# Ensure CGI wrappers executable
+find "${TARGET}/ui/webapi" -type f -name '*.cgi' -exec chmod 755 {} \; 2>/dev/null || true
+chmod 755 "${TARGET}/bin/run-python" 2>/dev/null || true
+chown -R OTPManager:OTPManager "${TARGET}" 2>/dev/null || true
+
+# Initialize schema/key using package python launcher when possible
+if [ -x "${TARGET}/bin/run-python" ]; then
+  OTPMANAGER_DATA_DIR="${VAR_DIR}" OTPMANAGER_SKIP_DSM_AUTH=1 OTPMANAGER_DEV_USER=install \
+    "${TARGET}/bin/run-python" -c 'from otpmanager.paths import ensure_data_dir, db_path; from otpmanager.db import Database; from otpmanager.service import OTPService; ensure_data_dir(); Database(str(db_path())).initialize(); OTPService({}); print("initialized")' || true
+fi
+
+chown -R OTPManager:http "${VAR_DIR}" 2>/dev/null || true
+find "${VAR_DIR}" -type f -exec chmod 660 {} \; 2>/dev/null || true
+chmod 770 "${VAR_DIR}" || true
+
+exit 0

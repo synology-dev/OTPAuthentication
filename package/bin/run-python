@@ -1,0 +1,64 @@
+#!/bin/sh
+# Probe system Python 3 and run with OTP Manager deps on PYTHONPATH.
+# Avoid consuming stdin so `run-python - <<'PY'` and pipes keep working.
+set -eu
+
+ROOT="$(CDPATH= cd -- "$(dirname "$0")/.." && pwd)"
+BACKEND="$ROOT/backend"
+DEPS_ROOT="$ROOT/deps"
+
+candidates="/usr/bin/python3 /usr/local/bin/python3"
+
+PY=""
+for c in $candidates; do
+  if [ -x "$c" ] && "$c" -c 'import sys; raise SystemExit(0 if sys.version_info >= (3, 8) else 1)'; then
+    PY="$c"
+    break
+  fi
+done
+
+if [ -z "$PY" ]; then
+  echo "OTPManager: no supported system Python 3.8+ found" >&2
+  exit 127
+fi
+
+# Discover ABI tag and select dependency bundle if present.
+BUNDLE="$("$PY" -c "
+import sys, pathlib, json, platform
+root = pathlib.Path(r'''$DEPS_ROOT''')
+maj, minor = sys.version_info[:2]
+arch = 'x86_64'
+machine = platform.machine()
+if machine in ('aarch64', 'arm64'):
+    arch = 'aarch64'
+elif machine.startswith('arm'):
+    arch = 'armv7'
+candidates = [root / arch / ('cp%d%d' % (maj, minor)), root / arch / 'abi3']
+manifest = root / 'manifest.json'
+if manifest.exists():
+    _ = json.loads(manifest.read_text())
+for c in candidates:
+    if c.is_dir():
+        print(c)
+        break
+else:
+    print('')
+")"
+
+if [ -n "$BUNDLE" ]; then
+  PYTHONPATH="$BACKEND:$BUNDLE${PYTHONPATH:+:$PYTHONPATH}"
+else
+  PYTHONPATH="$BACKEND${PYTHONPATH:+:$PYTHONPATH}"
+fi
+export PYTHONPATH
+export PYTHONDONTWRITEBYTECODE=1
+# synoscgi is sensitive to unexpected stderr noise from dependencies
+export PYTHONWARNINGS="${PYTHONWARNINGS:-ignore}"
+
+# Fail closed if cryptography missing when deps expected.
+if ! "$PY" -c 'import importlib.util; raise SystemExit(0 if importlib.util.find_spec("cryptography") else 1)'; then
+  echo "OTPManager: cryptography dependency missing for this Python/CPU" >&2
+  exit 2
+fi
+
+exec "$PY" "$@"

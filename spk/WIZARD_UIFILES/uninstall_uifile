@@ -1,0 +1,12 @@
+[{
+  "step_title": "Remove OTP Manager data",
+  "items": [{
+    "type": "multiselect",
+    "desc": "Data options",
+    "subitems": [{
+      "key": "wipe_data",
+      "desc": "Delete vault database and encryption key",
+      "defaultValue": false
+    }]
+  }]
+}]

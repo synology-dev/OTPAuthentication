@@ -1,0 +1,36 @@
+{
+  "package": "OTPManager",
+  "os_min_ver": "7.0-40337",
+  "python_min": "3.8",
+  "python_max_tested": "3.14",
+  "crypto": {
+    "name": "cryptography",
+    "version": "47.0.0",
+    "cffi_version": "1.17.1",
+    "note": "Latest cryptography that still supports Python 3.8 (DSM baseline). Review advisories before each release; some fixes require 3.9+ only builds."
+  },
+  "targets": [
+    {
+      "id": "x86_64",
+      "arch": "x86_64",
+      "syno_platforms": ["apollolake", "avoton", "braswell", "broadwell", "broadwellnk", "bromolow", "cedarview", "denverton", "geminilake", "grantley", "kvmx64", "purley", "r1000", "v1000", "epyc7002"],
+      "wheel_tags": ["manylinux_2_17_x86_64", "manylinux2014_x86_64"],
+      "status": "verified_dsm_7_4_1_python_3_8_15"
+    },
+    {
+      "id": "aarch64",
+      "arch": "aarch64",
+      "syno_platforms": ["rtd1296", "rtd1619b", "armada37xx"],
+      "wheel_tags": ["manylinux_2_17_aarch64", "manylinux2014_aarch64"],
+      "status": "planned_unverified"
+    },
+    {
+      "id": "armv7",
+      "arch": "armv7l",
+      "syno_platforms": ["armada38x", "alpine", "monaco"],
+      "wheel_tags": ["manylinux_2_28_armv7l", "manylinux_2_31_armv7l"],
+      "status": "built_unverified_cffi_gap",
+      "note": "cryptography publishes manylinux_2_28 armv7l wheels; cffi has no public armv7l wheel. Requires DSM glibc >= 2.28 and on-device import verification. Split additional SPKs if Synology platform ABIs differ."
+    }
+  ]
+}

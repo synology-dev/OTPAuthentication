@@ -1,0 +1,12 @@
+#!/bin/sh
+set -eu
+VAR_DIR="/var/packages/OTPManager/var"
+TMP="${SYNOPKG_TEMP_UPGRADE_FOLDER:-}"
+mkdir -p "${VAR_DIR}"
+chmod 700 "${VAR_DIR}" || true
+if [ -n "${TMP}" ] && [ -d "${TMP}/var" ]; then
+  cp -a "${TMP}/var/." "${VAR_DIR}/"
+fi
+chmod 600 "${VAR_DIR}/dek" 2>/dev/null || true
+chmod 600 "${VAR_DIR}/otp.db" 2>/dev/null || true
+exit 0

@@ -1,0 +1,28 @@
+dist/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.venv/
+venv/
+*.egg-info/
+# Wheels / extracted libs from build/fetch_deps.py (do not commit)
+package/deps/**
+!package/deps/.gitkeep
+package/var/
+*.spk
+*.sha256
+.DS_Store
+.env
+.env.*
+!.env.example
+# Keep Cursor plan + rules tracked
+!.cursor/
+!.cursor/plans/
+!.cursor/plans/**
+!.cursor/rules/
+!.cursor/rules/**
+.secrets/
+# Local Playwright / agent screenshots
+media/
+.playwright-mcp/

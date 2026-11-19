@@ -1,0 +1,838 @@
+/* OTP Manager — DSM 7 light look (scoped; no DSM chrome overrides) */
+:root {
+  --otp-bg: #ffffff;
+  --otp-surface: #f5f5f5;
+  --otp-surface-hover: #ebebeb;
+  --otp-border: #e8eaed;
+  --otp-border-strong: #d0d4d9;
+  --otp-text: #222222;
+  --otp-muted: #6b6b6b;
+  --otp-blue: #2481eb;
+  --otp-blue-hover: #1a6fd0;
+  --otp-blue-soft: #e8f2fc;
+  --otp-zebra: #fafafa;
+  --otp-row-hover: #f0f7ff;
+  --otp-warn: #d94841;
+  --otp-warn-soft: #fff1f0;
+  --otp-radius: 4px;
+}
+
+/* ----- App shell ----- */
+.otpmanager-wrap {
+  color: var(--otp-text);
+  background: var(--otp-bg);
+}
+
+/* Main window inset (D8): region margins set in OTPManager.js border layout */
+
+.otpmanager-wrap .x-panel-body,
+.otpmanager-wrap .x-grid3,
+.otpmanager-wrap .x-grid3-viewport,
+.otpmanager-wrap .x-grid3-scroller {
+  background: var(--otp-bg);
+  border-color: var(--otp-border);
+}
+
+.otpmanager-status {
+  margin: 0;
+  min-height: 18px;
+  padding: 2px 0 0;
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.otpmanager-muted {
+  color: var(--otp-muted);
+}
+
+.otpmanager-warn {
+  color: var(--otp-warn);
+}
+
+/* ----- Toolbar ----- */
+.otpmanager-toolbar.x-toolbar,
+.otpmanager-wrap .otpmanager-toolbar {
+  background: var(--otp-surface) !important;
+  border: 0 !important;
+  border-bottom: 1px solid var(--otp-border) !important;
+  padding: 6px 0 !important;
+  height: auto !important;
+}
+
+.otpmanager-toolbar .xtb-sep {
+  border-left: 1px solid var(--otp-border-strong) !important;
+  border-right: 0 !important;
+  height: 18px !important;
+  margin: 0 8px !important;
+  background: transparent !important;
+}
+
+.otpmanager-toolbar .x-btn {
+  margin: 0 3px !important;
+}
+
+.otpmanager-toolbar .x-btn-tl,
+.otpmanager-toolbar .x-btn-tr,
+.otpmanager-toolbar .x-btn-tc,
+.otpmanager-toolbar .x-btn-ml,
+.otpmanager-toolbar .x-btn-mr,
+.otpmanager-toolbar .x-btn-mc,
+.otpmanager-toolbar .x-btn-bl,
+.otpmanager-toolbar .x-btn-br,
+.otpmanager-toolbar .x-btn-bc {
+  background: transparent !important;
+}
+
+.otpmanager-toolbar .x-btn button,
+.otpmanager-toolbar .x-btn .x-btn-text {
+  background: var(--otp-bg) !important;
+  border: 1px solid var(--otp-border-strong) !important;
+  border-radius: var(--otp-radius) !important;
+  color: var(--otp-text) !important;
+  padding: 4px 10px !important;
+  height: auto !important;
+  min-height: 26px;
+  font-size: 12px !important;
+  font-weight: 500;
+  line-height: 16px !important;
+  cursor: pointer;
+}
+
+.otpmanager-toolbar .x-btn-over button,
+.otpmanager-toolbar .x-btn-over .x-btn-text,
+.otpmanager-toolbar .x-btn-click button,
+.otpmanager-toolbar .x-btn-click .x-btn-text {
+  background: var(--otp-surface-hover) !important;
+  border-color: var(--otp-border-strong) !important;
+}
+
+.otpmanager-toolbar .x-btn-menu-active button,
+.otpmanager-toolbar .x-btn-pressed button {
+  background: var(--otp-blue-soft) !important;
+  border-color: var(--otp-blue) !important;
+  color: var(--otp-blue) !important;
+}
+
+.otpmanager-toolbar .x-item-disabled button,
+.otpmanager-toolbar .x-item-disabled .x-btn-text {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.otpmanager-toolbar .otpmanager-btn-primary button,
+.otpmanager-toolbar .otpmanager-btn-primary .x-btn-text {
+  background: var(--otp-blue) !important;
+  border-color: var(--otp-blue) !important;
+  color: #fff !important;
+}
+
+.otpmanager-toolbar .otpmanager-btn-primary.x-btn-over button,
+.otpmanager-toolbar .otpmanager-btn-primary.x-btn-over .x-btn-text {
+  background: var(--otp-blue-hover) !important;
+  border-color: var(--otp-blue-hover) !important;
+  color: #fff !important;
+}
+
+.otpmanager-search.x-form-field,
+.otpmanager-toolbar .otpmanager-search {
+  height: 26px !important;
+  line-height: 24px !important;
+  padding: 0 8px !important;
+  border: 1px solid var(--otp-border-strong) !important;
+  border-radius: var(--otp-radius) !important;
+  background: var(--otp-bg) !important;
+  color: var(--otp-text) !important;
+  box-shadow: none !important;
+}
+
+.otpmanager-search.x-form-focus,
+.otpmanager-toolbar .otpmanager-search.x-form-focus {
+  border-color: var(--otp-blue) !important;
+  box-shadow: 0 0 0 2px rgba(36, 129, 235, 0.15) !important;
+}
+
+/* ----- Grid ----- */
+.otpmanager-grid .x-grid3-header,
+.otpmanager-grid .x-grid3-hd-row td {
+  background: var(--otp-surface) !important;
+  border-color: var(--otp-border) !important;
+  color: var(--otp-muted) !important;
+  font-weight: 600 !important;
+  font-size: 12px !important;
+}
+
+.otpmanager-grid .x-grid3-hd-inner {
+  padding: 7px 8px !important;
+  color: var(--otp-muted) !important;
+}
+
+.otpmanager-grid .x-grid3-row {
+  border-color: var(--otp-border) !important;
+  background-color: var(--otp-bg);
+}
+
+.otpmanager-grid .x-grid3-row-alt {
+  background-color: var(--otp-zebra) !important;
+}
+
+.otpmanager-grid .x-grid3-row-over {
+  background-color: var(--otp-row-hover) !important;
+}
+
+.otpmanager-grid .x-grid3-row-selected {
+  background-color: var(--otp-blue-soft) !important;
+  border-color: #c5ddf7 !important;
+}
+
+.otpmanager-grid .x-grid3-cell-inner {
+  padding: 8px !important;
+  font-size: 13px;
+  color: var(--otp-text);
+}
+
+.otpmanager-grid .x-grid3-body .x-grid3-td {
+  border-right: 1px solid var(--otp-border) !important;
+}
+
+.otpmanager-grid .x-grid-empty {
+  color: var(--otp-muted);
+  padding: 24px;
+  font-size: 13px;
+}
+
+.otpmanager-code {
+  font-family: Menlo, Consolas, "Courier New", monospace;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  color: var(--otp-text);
+  cursor: pointer;
+}
+
+.otpmanager-dialog-error,
+.otpmanager-dialog-error .x-form-display-field {
+  color: var(--otp-warn); /* #d94841 — reinforced under .otpmanager-dialog below */
+  min-height: 18px;
+  margin-top: 4px;
+}
+
+.otpmanager-time {
+  font-variant-numeric: tabular-nums;
+  color: var(--otp-muted);
+}
+
+.otpmanager-time-low {
+  color: var(--otp-warn);
+  font-weight: 700;
+  background: var(--otp-warn-soft);
+  border-radius: 3px;
+  padding: 1px 6px;
+}
+
+/* ----- Dialogs / windows (scoped; includes SDS chrome) ----- */
+.otpmanager-dialog.x-window,
+.otpmanager-dialog.sds-window-v5,
+.otpmanager-dialog.x-window-plain {
+  border: 1px solid var(--otp-border-strong) !important;
+  border-color: var(--otp-border-strong) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.12) !important;
+  outline: none !important;
+  background: var(--otp-bg) !important;
+  overflow: hidden;
+}
+
+/* Kill Ext/SDS nested frame wire borders (keep soft outer only) */
+.otpmanager-dialog .x-window-tl,
+.otpmanager-dialog .x-window-tr,
+.otpmanager-dialog .x-window-tc,
+.otpmanager-dialog .x-window-ml,
+.otpmanager-dialog .x-window-mr,
+.otpmanager-dialog .x-window-bl,
+.otpmanager-dialog .x-window-br,
+.otpmanager-dialog .x-window-bc,
+.otpmanager-dialog .x-window-mc,
+.otpmanager-dialog .x-window-bwrap,
+.otpmanager-dialog .x-window-body,
+.otpmanager-dialog .x-panel,
+.otpmanager-dialog .x-panel-bwrap,
+.otpmanager-dialog .x-panel-body,
+.otpmanager-dialog .x-panel-noborder-body,
+.otpmanager-dialog .x-plain-body {
+  background-image: none !important;
+  background-color: var(--otp-bg) !important;
+  border: 0 !important;
+  border-color: transparent !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.otpmanager-dialog .x-window-header,
+.otpmanager-dialog .sds-window-header,
+.otpmanager-dialog .syno-ux-window-header {
+  color: var(--otp-text) !important;
+  font-weight: 600 !important;
+  font-size: 14px !important;
+  line-height: 1.35 !important;
+  background: var(--otp-bg) !important;
+  padding: 12px 14px 14px !important;
+  border: 0 !important;
+  border-bottom: 1px solid var(--otp-border-strong) !important;
+  box-shadow: none !important;
+}
+
+/* Title span is inline — no border here (keeps space under title from header padding) */
+.otpmanager-dialog .x-window-header-text {
+  color: var(--otp-text) !important;
+  font-weight: 600 !important;
+  font-size: 14px !important;
+  line-height: 1.35 !important;
+  border: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.otpmanager-dialog .x-window-body,
+.otpmanager-dialog .x-panel-body,
+.otpmanager-dialog .x-form {
+  background: var(--otp-bg) !important;
+  color: var(--otp-text);
+}
+
+.otpmanager-dialog-body,
+.otpmanager-dialog .otpmanager-dialog-body {
+  padding: 16px 18px !important;
+}
+
+.otpmanager-dialog .x-form-item {
+  margin-bottom: 12px;
+}
+
+.otpmanager-dialog .x-form-item-label,
+.otpmanager-dialog label.x-form-item-label {
+  color: var(--otp-muted) !important;
+  font-size: 12px !important;
+  font-weight: 500;
+  padding-top: 8px !important;
+}
+
+/* Plain inputs (not combo wrap) */
+.otpmanager-dialog .x-form-text,
+.otpmanager-dialog .x-form-textarea,
+.otpmanager-dialog .x-form-field,
+.otpmanager-dialog textarea.x-form-field,
+.otpmanager-dialog input.x-form-text {
+  border: 1px solid var(--otp-border-strong) !important;
+  border-radius: var(--otp-radius) !important;
+  padding: 7px 10px !important;
+  height: 32px !important;
+  line-height: 18px !important;
+  background: var(--otp-bg) !important;
+  color: var(--otp-text) !important;
+  box-shadow: none !important;
+  outline: none !important;
+  font-size: 13px !important;
+  box-sizing: border-box !important;
+}
+
+/* Match textarea width to sibling text inputs */
+.otpmanager-dialog .x-form-element textarea.x-form-field,
+.otpmanager-dialog .x-form-element .x-form-textarea,
+.otpmanager-dialog textarea.x-form-textarea,
+.otpmanager-dialog textarea.x-form-field {
+  width: 100% !important;
+  max-width: 100% !important;
+  height: auto !important;
+  min-height: 64px;
+  line-height: 1.45 !important;
+  resize: vertical;
+}
+
+.otpmanager-dialog .x-form-element > input.x-form-text {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+.otpmanager-dialog .x-form-focus,
+.otpmanager-dialog .x-form-text.x-form-focus {
+  border-color: var(--otp-blue) !important;
+  box-shadow: 0 0 0 2px rgba(36, 129, 235, 0.15) !important;
+}
+
+.otpmanager-dialog .x-form-empty-field {
+  color: var(--otp-muted) !important;
+}
+
+.otpmanager-dialog .x-form-display-field,
+.otpmanager-dialog .x-form-display-field .x-form-display-field {
+  color: var(--otp-text);
+  font-size: 13px;
+  line-height: 1.5;
+  min-height: 32px;
+  padding-top: 7px;
+  padding-bottom: 7px;
+  box-sizing: border-box;
+}
+
+/* Dialog validation / API errors — beat display-field text color (D0c) */
+.otpmanager-dialog .otpmanager-dialog-error,
+.otpmanager-dialog .otpmanager-dialog-error.x-form-display-field,
+.otpmanager-dialog .otpmanager-dialog-error .x-form-display-field,
+.otpmanager-dialog .otpmanager-dialog-error .x-form-element,
+.otpmanager-dialog .otpmanager-dialog-error-item .x-form-display-field,
+.otpmanager-dialog .otpmanager-dialog-error-item .x-form-element,
+.otpmanager-dialog .x-form-invalid-msg,
+.otpmanager-dialog .x-form-invalid label,
+.otpmanager-dialog .x-form-item.x-form-invalid .x-form-cb-label {
+  color: var(--otp-warn) !important;
+}
+
+.otpmanager-dialog .otpmanager-dialog-error,
+.otpmanager-dialog .otpmanager-dialog-error-item {
+  min-height: 18px;
+  margin-top: 4px;
+}
+
+.otpmanager-dialog .otpmanager-dialog-error.x-form-display-field,
+.otpmanager-dialog .otpmanager-dialog-error-item .x-form-display-field {
+  min-height: 18px;
+  padding-top: 2px;
+  padding-bottom: 2px;
+  line-height: 1.4;
+  font-size: 12px;
+}
+
+.otpmanager-dialog .x-form-check-wrap,
+.otpmanager-dialog .x-form-cb-label {
+  color: var(--otp-text);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+/* Export plaintext ack: itemCls on .x-form-item; flex-center checkbox + label */
+.otpmanager-dialog .x-form-item.otpmanager-check {
+  padding-left: 0;
+  margin-bottom: 8px;
+}
+
+.otpmanager-dialog .otpmanager-check .x-form-element {
+  padding-left: 0 !important;
+}
+
+.otpmanager-dialog .otpmanager-check .x-form-check-wrap {
+  display: flex !important;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  line-height: 1.4;
+}
+
+.otpmanager-dialog .otpmanager-check .x-form-check-wrap input[type="checkbox"] {
+  flex: 0 0 auto;
+  align-self: center;
+  position: static !important;
+  float: none !important;
+  display: inline-block !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  vertical-align: middle;
+  width: 14px;
+  height: 14px;
+}
+
+.otpmanager-dialog .otpmanager-check .x-form-cb-label,
+.otpmanager-dialog .otpmanager-check label.x-form-cb-label {
+  flex: 1 1 auto;
+  display: block !important;
+  float: none !important;
+  position: static !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  line-height: 1.4 !important;
+  white-space: normal;
+  vertical-align: middle;
+  color: var(--otp-text);
+}
+
+/* Combo/date: one control — border on wrap, flush trigger (no floating square) */
+.otpmanager-dialog .x-form-element > .x-form-field-wrap,
+.otpmanager-dialog .x-form-field-wrap {
+  width: 100% !important;
+  max-width: 100% !important;
+  border: 1px solid var(--otp-border-strong) !important;
+  border-radius: var(--otp-radius) !important;
+  background: var(--otp-bg) !important;
+  box-sizing: border-box !important;
+  overflow: hidden;
+  position: relative;
+}
+
+.otpmanager-dialog .x-form-field-wrap .x-form-text,
+.otpmanager-dialog .x-form-field-wrap input.x-form-text {
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  height: 32px !important;
+  line-height: 30px !important;
+  padding: 0 10px !important;
+  width: calc(100% - 28px) !important;
+  max-width: calc(100% - 28px) !important;
+}
+
+.otpmanager-dialog .x-form-field-wrap.x-form-focus,
+.otpmanager-dialog .x-form-field-wrap .x-form-focus {
+  border-color: var(--otp-blue) !important;
+  box-shadow: 0 0 0 2px rgba(36, 129, 235, 0.15) !important;
+}
+
+.otpmanager-dialog .x-form-field-wrap .x-form-focus {
+  box-shadow: none !important;
+}
+
+.otpmanager-dialog .x-form-trigger,
+.otpmanager-dialog .x-form-arrow-trigger {
+  border: 0 !important;
+  border-left: 1px solid var(--otp-border-strong) !important;
+  border-radius: 0 !important;
+  background-color: var(--otp-surface) !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%236b6b6b' d='M1 1l4 4 4-4'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: center center !important;
+  background-size: 10px 6px !important;
+  width: 28px !important;
+  right: 0 !important;
+  top: 0 !important;
+  height: 100% !important;
+  margin: 0 !important;
+}
+
+.otpmanager-dialog .otpmanager-settings {
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--otp-text);
+}
+
+.otpmanager-dialog .otpmanager-settings p {
+  margin: 0 0 10px;
+}
+
+.otpmanager-dialog .otpmanager-settings b {
+  color: var(--otp-muted);
+  font-weight: 600;
+  margin-right: 6px;
+}
+
+/* Dialog footer / buttons */
+.otpmanager-dialog .x-window-bbar,
+.otpmanager-dialog .x-panel-btns,
+.otpmanager-dialog .x-panel-fbar,
+.otpmanager-dialog .x-toolbar-footer {
+  background: var(--otp-surface) !important;
+  border: 0 !important;
+  border-top: 1px solid var(--otp-border-strong) !important;
+  box-shadow: none !important;
+  padding: 10px 12px !important;
+}
+
+.otpmanager-dialog .x-panel-btns td.x-panel-btn-td {
+  padding: 0 0 0 8px !important;
+}
+
+.otpmanager-dialog .x-btn-tl,
+.otpmanager-dialog .x-btn-tr,
+.otpmanager-dialog .x-btn-tc,
+.otpmanager-dialog .x-btn-ml,
+.otpmanager-dialog .x-btn-mr,
+.otpmanager-dialog .x-btn-mc,
+.otpmanager-dialog .x-btn-bl,
+.otpmanager-dialog .x-btn-br,
+.otpmanager-dialog .x-btn-bc {
+  background-image: none !important;
+  background: transparent !important;
+}
+
+.otpmanager-dialog .x-btn button,
+.otpmanager-dialog .x-btn .x-btn-text {
+  background: var(--otp-bg) !important;
+  border: 1px solid var(--otp-border-strong) !important;
+  border-radius: var(--otp-radius) !important;
+  color: var(--otp-text) !important;
+  padding: 5px 14px !important;
+  height: auto !important;
+  min-height: 28px;
+  font-size: 12px !important;
+  font-weight: 500;
+  line-height: 16px !important;
+  cursor: pointer;
+}
+
+.otpmanager-dialog .x-btn-over button,
+.otpmanager-dialog .x-btn-over .x-btn-text {
+  background: var(--otp-surface-hover) !important;
+}
+
+.otpmanager-dialog .otpmanager-btn-primary button,
+.otpmanager-dialog .otpmanager-btn-primary .x-btn-text {
+  background: var(--otp-blue) !important;
+  border-color: var(--otp-blue) !important;
+  color: #fff !important;
+}
+
+.otpmanager-dialog .otpmanager-btn-primary.x-btn-over button,
+.otpmanager-dialog .otpmanager-btn-primary.x-btn-over .x-btn-text {
+  background: var(--otp-blue-hover) !important;
+  border-color: var(--otp-blue-hover) !important;
+  color: #fff !important;
+}
+
+/* Nested grids inside dialogs (Share) */
+.otpmanager-dialog .otpmanager-grid .x-grid3-header,
+.otpmanager-dialog .otpmanager-grid .x-grid3-hd-row td {
+  background: var(--otp-surface) !important;
+  border-color: var(--otp-border) !important;
+  color: var(--otp-muted) !important;
+  font-weight: 600 !important;
+}
+
+.otpmanager-dialog .otpmanager-grid .x-grid3-row {
+  border-color: var(--otp-border) !important;
+}
+
+.otpmanager-dialog .otpmanager-grid .x-grid3-cell-inner {
+  padding: 7px 8px !important;
+  font-size: 12px;
+}
+
+.otpmanager-dialog .otpmanager-grid .x-grid-empty {
+  color: var(--otp-muted);
+  padding: 16px;
+}
+
+/* Ext.Msg alert / confirm / prompt */
+.otpmanager-msgbox .ext-mb-content,
+.otpmanager-msgbox .ext-mb-text,
+.otpmanager-msgbox .ext-mb-textarea {
+  color: var(--otp-text) !important;
+  font-size: 13px !important;
+  line-height: 1.45;
+}
+
+.otpmanager-msgbox .x-window-body {
+  padding: 16px 18px !important;
+  background: var(--otp-bg) !important;
+}
+
+.otpmanager-msgbox .ext-mb-input {
+  margin-top: 10px !important;
+  border: 1px solid var(--otp-border-strong) !important;
+  border-radius: var(--otp-radius) !important;
+  padding: 7px 10px !important;
+  height: 32px !important;
+  line-height: 18px !important;
+  width: 100% !important;
+  box-sizing: border-box;
+}
+
+.otpmanager-msgbox .x-tool-close {
+  opacity: 0.7;
+}
+
+/* Context / cycle menus */
+.otpmanager-menu.x-menu,
+.x-menu.otpmanager-menu {
+  background: var(--otp-bg) !important;
+  border: 1px solid var(--otp-border-strong) !important;
+  border-color: var(--otp-border-strong) !important;
+  border-radius: var(--otp-radius) !important;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12) !important;
+  outline: none !important;
+  padding: 4px 0 !important;
+}
+
+.otpmanager-menu .x-menu-item,
+.otpmanager-menu a.x-menu-item {
+  color: var(--otp-text) !important;
+  font-size: 12px !important;
+  padding: 6px 14px 6px 28px !important;
+  line-height: 18px !important;
+}
+
+.otpmanager-menu .x-menu-item-active {
+  background: var(--otp-blue-soft) !important;
+  border-color: transparent !important;
+}
+
+.otpmanager-menu .x-menu-item-active a.x-menu-item {
+  color: var(--otp-blue) !important;
+}
+
+.otpmanager-menu .x-menu-sep {
+  border-bottom: 1px solid var(--otp-border) !important;
+  background: transparent !important;
+  margin: 4px 8px !important;
+}
+
+/* Combo dropdown lists owned by OTP dialogs */
+.otpmanager-combo-list {
+  border: 1px solid var(--otp-border-strong) !important;
+  border-color: var(--otp-border-strong) !important;
+  border-radius: var(--otp-radius) !important;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12) !important;
+  outline: none !important;
+  background: var(--otp-bg) !important;
+}
+
+.otpmanager-combo-list .x-combo-list-item {
+  padding: 6px 10px !important;
+  font-size: 12px;
+  color: var(--otp-text);
+}
+
+.otpmanager-combo-list .x-combo-selected {
+  background: var(--otp-blue-soft) !important;
+  border-color: transparent !important;
+  color: var(--otp-blue) !important;
+}
+
+/* ----- Log Center–style paging bar ----- */
+.otpmanager-paging.x-toolbar,
+.otpmanager-wrap .otpmanager-paging {
+  background: var(--otp-bg) !important;
+  border: 0 !important;
+  border-top: 1px solid var(--otp-border) !important;
+  padding: 4px 0 !important;
+  min-height: 36px;
+}
+
+.otpmanager-paging .xtb-sep {
+  border-left: 1px solid var(--otp-border) !important;
+  border-right: 0 !important;
+  height: 18px;
+  margin: 0 8px;
+  background: transparent !important;
+}
+
+.otpmanager-paging .x-btn-tl,
+.otpmanager-paging .x-btn-tr,
+.otpmanager-paging .x-btn-tc,
+.otpmanager-paging .x-btn-ml,
+.otpmanager-paging .x-btn-mr,
+.otpmanager-paging .x-btn-mc,
+.otpmanager-paging .x-btn-bl,
+.otpmanager-paging .x-btn-br,
+.otpmanager-paging .x-btn-bc {
+  background: transparent !important;
+}
+
+.otpmanager-paging .otpmanager-page-nav button,
+.otpmanager-paging .otpmanager-page-nav .x-btn-text,
+.otpmanager-paging .otpmanager-page-refresh button,
+.otpmanager-paging .otpmanager-page-refresh .x-btn-text {
+  color: #555 !important;
+  background: transparent !important;
+  border: 0 !important;
+  font-size: 12px !important;
+  font-weight: 600;
+  min-width: 28px;
+  height: 26px;
+  line-height: 26px !important;
+  padding: 0 6px !important;
+}
+
+.otpmanager-paging .otpmanager-page-nav.x-btn-over button,
+.otpmanager-paging .otpmanager-page-refresh.x-btn-over button {
+  color: var(--otp-blue) !important;
+  background: var(--otp-blue-soft) !important;
+  border-radius: var(--otp-radius);
+}
+
+.otpmanager-paging .x-item-disabled button,
+.otpmanager-paging .x-item-disabled .x-btn-text {
+  color: #c0c4c8 !important;
+  background: transparent !important;
+}
+
+.otpmanager-paging .otpmanager-page-num,
+.otpmanager-paging .x-toolbar-cell .otpmanager-page-num {
+  display: inline-block;
+  min-width: 26px;
+  height: 26px;
+  line-height: 26px;
+  text-align: center;
+  margin: 0 4px;
+  padding: 0 8px;
+  border-radius: 3px;
+  background: var(--otp-blue);
+  color: #fff !important;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.otpmanager-paging .otpmanager-page-label,
+.otpmanager-paging .otpmanager-page-count {
+  color: var(--otp-muted) !important;
+  font-size: 12px;
+  padding: 0 8px;
+}
+
+/* Page-size combo: one border on wrap; hide theme trigger glyph (was `_` artifact) */
+.otpmanager-paging .x-form-field-wrap {
+  position: relative !important;
+  border: 1px solid var(--otp-border-strong) !important;
+  border-radius: var(--otp-radius) !important;
+  background: var(--otp-bg) !important;
+  height: 26px !important;
+  overflow: hidden;
+  box-sizing: border-box !important;
+}
+
+.otpmanager-paging .otpmanager-page-size.x-form-field,
+.otpmanager-paging .otpmanager-page-size,
+.otpmanager-paging .x-form-field-wrap .x-form-text,
+.otpmanager-paging .x-form-field-wrap input.x-form-text {
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  outline: none !important;
+  text-decoration: none !important;
+  background: transparent !important;
+  color: var(--otp-text) !important;
+  height: 24px !important;
+  line-height: 24px !important;
+  padding: 0 22px 0 6px !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.otpmanager-paging .x-form-field-wrap .x-form-trigger,
+.otpmanager-paging .x-form-field-wrap .x-form-arrow-trigger,
+.otpmanager-paging .x-form-field-wrap img.x-form-trigger {
+  border: 0 !important;
+  border-left: 1px solid var(--otp-border) !important;
+  border-radius: 0 !important;
+  background-color: var(--otp-surface) !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%236b6b6b' d='M1 1l4 4 4-4'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: center center !important;
+  background-size: 8px 5px !important;
+  width: 18px !important;
+  min-width: 18px !important;
+  max-width: 18px !important;
+  height: 100% !important;
+  right: 0 !important;
+  top: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  text-indent: -9999px !important;
+  /* blank theme sprite pixels if src not yet cleared */
+  object-fit: none !important;
+  object-position: -999px -999px !important;
+}
+
+.otpmanager-paging .x-form-field-wrap.x-form-focus,
+.otpmanager-paging .otpmanager-page-size.x-form-focus {
+  border-color: var(--otp-blue) !important;
+  box-shadow: 0 0 0 2px rgba(36, 129, 235, 0.15) !important;
+}

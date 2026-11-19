@@ -1,0 +1,11 @@
+#!/bin/sh
+set -eu
+# Synology uninstall wizard key `wipe_data` is exported into the script environment.
+WIPE="${wipe_data:-${OTPMANAGER_WIPE_DATA:-}}"
+case "${WIPE}" in
+  true|TRUE|1|yes|YES)
+    rm -rf /volume1/@appdata/OTPManager 2>/dev/null || true
+    rm -rf /var/packages/OTPManager/var 2>/dev/null || true
+    ;;
+esac
+exit 0

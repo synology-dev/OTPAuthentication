@@ -1,0 +1,11 @@
+#!/bin/sh
+set -eu
+VAR_DIR="/var/packages/OTPManager/var"
+TMP="${SYNOPKG_TEMP_UPGRADE_FOLDER:-}"
+# Always use filesystem copy during preupgrade (BusyBox-safe). Prefer consistency
+# over in-process SQLite backup here; DB is quiesced because package was stopped.
+if [ -n "${TMP}" ] && [ -d "${VAR_DIR}" ]; then
+  mkdir -p "${TMP}/var"
+  cp -a "${VAR_DIR}/." "${TMP}/var/"
+fi
+exit 0

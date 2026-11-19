@@ -1,0 +1,27 @@
+---
+description: Keep docs/logic-spec.md in sync when requirements or behavior change
+alwaysApply: true
+---
+
+# Logic spec sync
+
+Canonical behavior/test spec: `docs/logic-spec.md`.
+
+## When to update
+
+On any **new requirement**, **UX/logic change**, or **bugfix that changes intended behavior**, before or with the code change:
+
+1. Read `docs/logic-spec.md`.
+2. Add/adjust the matching rows (stable IDs like `V5`, `I2`; short testable statements).
+3. Note decision date under "Lịch sử quyết định ngắn" when the product choice changes.
+4. Do not leave chat-only requirements that contradict or omit the spec.
+
+## When implementing / verifying
+
+- Treat `docs/logic-spec.md` as the checklist for Playwright/manual verify.
+- If code and spec disagree, **ask which wins**, then update the loser (usually code follows spec; if user changed intent, update spec first).
+
+## Do not
+
+- Duplicate the whole spec into chat or other docs — link/update `docs/logic-spec.md`.
+- Edit `.cursor/plans/*` unless the user asks.
