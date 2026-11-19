@@ -1,13 +1,14 @@
 {
   "package": "OTPAuthentication",
   "os_min_ver": "7.0-40337",
-  "python_min": "3.9",
+  "python_min": "3.8",
   "python_max_tested": "3.14",
   "crypto": {
     "name": "cryptography",
     "version": "50.0.2",
+    "version_py38": "47.0.0",
     "cffi_version": "1.17.1",
-    "note": "cryptography 50+ requires Python >=3.9 (drops 3.8). Review advisories before each release."
+    "note": "Dual runtime: cryptography 47 for DSM Python 3.8 (cp38); 50 for Python ≥3.9 (abi3/cp39). Dev/CI pip-audit stays on 50 via requirements-dev.txt."
   },
   "targets": [
     {

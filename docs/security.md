@@ -18,6 +18,11 @@
 
 ## Dependency
 
-`cryptography==50.0.2` is shipped under `package/deps/<arch>/` and selected by the Python probe (requires system Python ≥ 3.9). Run `pip-audit -r requirements-dev.txt` before each release.
+Runtime wheels under `package/deps/<arch>/` are dual-path (selected by `run-python`):
 
-DSM hosts still on Python 3.8 cannot use this package crypto stack; upgrade the system interpreter or stay on an older SPK that vendors cryptography 47.
+| System Python | Bundle | `cryptography` |
+|---------------|--------|----------------|
+| 3.8 | `cp38/` | **47.0.0** (last line supporting 3.8) |
+| ≥ 3.9 | `abi3/` or `cp39/` | **50.0.2** |
+
+Dev/CI keep `cryptography==50.0.2` in `requirements-dev.txt` for tests and `pip-audit`. Run `pip-audit -r requirements-dev.txt` before each release.

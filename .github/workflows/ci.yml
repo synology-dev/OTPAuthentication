@@ -12,7 +12,8 @@ permissions:
 jobs:
   test:
     # ubuntu-22.04 keeps setup-python binaries for older CPythons if matrix expands;
-    # cryptography 50+ / pytest 9+ currently require >=3.9 / >=3.10 so 3.8–3.9 are omitted.
+    # Dev audit uses cryptography 50+ / pytest 9+ (>=3.9 / >=3.10), so 3.8–3.9 are omitted.
+    # DSM 3.8 is covered by shipped cp38 wheels (cryptography 47) from fetch_deps, not this matrix.
     runs-on: ubuntu-22.04
     strategy:
       fail-fast: false
@@ -86,6 +87,9 @@ jobs:
                   bad.append(whl.name)
           if bad:
               raise SystemExit("host/native wheels found: " + ", ".join(bad))
+          for need in ("abi3", "cp38", "cp39"):
+              if not (root / need).is_dir():
+                  raise SystemExit(f"missing dual-path bundle: {root / need}")
           print("wheel ABI ok")
           PY
       - name: Upload artifact
