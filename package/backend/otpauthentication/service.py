@@ -441,6 +441,48 @@ class OTPService:
             conn.execute("DELETE FROM entries WHERE id=?", (entry_id,))
             return {"deleted": True, "shares_removed": shares}
 
+    def delete_entries(self, unlock_token: str, entry_ids: List[int]) -> dict:
+        """Delete many owned entries in one transaction; soft-fail per id."""
+        if not entry_ids:
+            raise AppError("invalid", "No entry ids")
+        if len(entry_ids) > C.BATCH_DELETE_MAX:
+            raise AppError("too_many", "Too many entries")
+        seen = set()
+        unique_ids: List[int] = []
+        for eid in entry_ids:
+            iid = int(eid)
+            if iid in seen:
+                continue
+            seen.add(iid)
+            unique_ids.append(iid)
+
+        identity = self.identity()
+        results: List[dict] = []
+        deleted_count = 0
+        failed_count = 0
+        shares_removed = 0
+        with self.db.txn() as conn:
+            user = self._session_user(conn, identity, unlock_token, interactive=True)
+            for entry_id in unique_ids:
+                row = conn.execute("SELECT * FROM entries WHERE id=?", (entry_id,)).fetchone()
+                if not row or row["owner_id"] != user["id"]:
+                    results.append({"id": entry_id, "ok": False, "error": "forbidden"})
+                    failed_count += 1
+                    continue
+                shares = conn.execute(
+                    "SELECT COUNT(*) AS c FROM shares WHERE entry_id=?", (entry_id,)
+                ).fetchone()["c"]
+                conn.execute("DELETE FROM entries WHERE id=?", (entry_id,))
+                results.append({"id": entry_id, "ok": True})
+                deleted_count += 1
+                shares_removed += int(shares)
+        return {
+            "deleted_count": deleted_count,
+            "failed_count": failed_count,
+            "shares_removed": shares_removed,
+            "results": results,
+        }
+
     def reveal_secret(self, unlock_token: str, entry_id: int, pin: str) -> dict:
         identity = self.identity()
         with self.db.connect() as conn:

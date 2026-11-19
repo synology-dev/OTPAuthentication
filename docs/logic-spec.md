@@ -78,6 +78,9 @@ Mô hình: **PIN = khóa UI/API** (cấp unlock session). OTP ciphertext dùng p
 | G4 | Click ô **Code** → copy TOTP vào clipboard; feedback ngắn “Copied” (status) | OM-18 |
 | G5 | Settings checkbox **Copy to Clipboard only** (mặc định **tắt**, lưu per-user localStorage). Bật → mask CODE (`••••••`); click cell vẫn copy mã thật + “Copied” | |
 | G6 | Phân trang kiểu DSM Log Center: first/prev/page/next/last, Items per page (25/50/100/200, mặc định 50), “N items”, refresh | API list offset/limit + total |
+| G7 | Right-click grid: nếu hàng đã nằm trong selection → **giữ** multi-select; nếu chưa → chọn **chỉ** hàng đó | OM-49 |
+| G8 | Context menu **Delete**: xóa **mọi** entry owned đang chọn (confirm 1 lần, **một** request `ids`); shared-with-me không xóa được; status ngắn Deleted N / failed | OM-49; batch `entries.delete` + `ids` (giữ `id` đơn) |
+| G9 | Context menu multi-select (>1): ẩn Edit/Share/Reveal; vẫn có Copy / Export / Delete (khi có owned) | OM-49 |
 
 ## 6. Export
 
@@ -89,6 +92,7 @@ Mô hình: **PIN = khóa UI/API** (cấp unlock session). OTP ciphertext dùng p
 | E4 | Plaintext: hiện checkbox rủi ro 2FA; Encrypted: ẩn checkbox |
 | E5 | Cần unlock session + CSRF; sai DSM password → lỗi trên dialog, không export |
 | E6 | Checkbox plaintext: checkbox thẳng hàng dọc với dòng chữ đầu của label |
+| E7 | Scope **Selected**: export các entry **owned** đang chọn (`ids`); ≥1 owned selected → dialog mặc định Selected; **0** selected (hoặc chỉ shared) → mặc định **All owned**. Toolbar Export và context menu Export dùng cùng dialog | OM-49 |
 
 ## 7. Package icon
 
@@ -128,4 +132,6 @@ Mô hình: **PIN = khóa UI/API** (cấp unlock session). OTP ciphertext dùng p
 - 2026-11-19: Export encryption password tự do (không min length); label Encryption password; lỗi required rõ.
 - 2026-11-19: Đổi tên package/id/path/Ext → **OTPAuthentication**; display **OTP Authentication**; GitHub `synology-dev/OTPAuthentication`. Migrating vault từ package cũ: copy `@appdata/OTPManager` → `OTPAuthentication` (postinst tự copy nếu data mới trống).
 - 2026-11-19: Settings restyle kiểu DSM Info Center (D9) — hàng label|value + checkbox căn cột value.
+- 2026-11-19: OM-49 — right-click giữ multi-select (G7); Delete bulk owned (G8); Export Selected qua dialog/ids (E7).
 - 2026-11-19: Import lỗi parse/decrypt → AppError 400 + message (I6); tránh CGI HTTP 500 vì DSM trả HTML.
+- 2026-11-19: G8 — bulk delete một request `ids[]` + txn (không gọi delete tuần tự từng id).

@@ -198,7 +198,12 @@ SYNO.SDS.OTPAuthentication.AppWindow = Ext.extend(SYNO.SDS.AppWindow, {
       listeners: {
         rowcontextmenu: function (g, row, e) {
           e.stopEvent();
-          g.getSelectionModel().selectRow(row);
+          var sm = g.getSelectionModel();
+          var rec = g.getStore().getAt(row);
+          // Keep multi-select when right-clicking an already-selected row (OM-49).
+          if (!rec || !sm.isSelected(rec)) {
+            sm.selectRow(row);
+          }
           me._showRowMenu(e.getXY());
         },
         cellclick: function (g, row, col) {
@@ -319,18 +324,32 @@ SYNO.SDS.OTPAuthentication.AppWindow = Ext.extend(SYNO.SDS.AppWindow, {
 
   _showRowMenu: function (xy) {
     var me = this;
-    var rec = this.grid.getSelectionModel().getSelected();
+    var sm = this.grid.getSelectionModel();
+    var selections = sm.getSelections() || [];
+    var rec = sm.getSelected();
     if (!rec) { return; }
-    var owned = !rec.get("is_shared");
+    var ownedRecs = [];
+    var i;
+    for (i = 0; i < selections.length; i++) {
+      if (!selections[i].get("is_shared")) {
+        ownedRecs.push(selections[i]);
+      }
+    }
+    var multi = selections.length > 1;
     var items = [
-      { text: "Copy code", handler: function () { me.copySelectedCode(); } }
+      { text: "Copy code", handler: function () { me.copySelectedCode(rec); } }
     ];
-    if (owned) {
+    if (!multi && ownedRecs.length === 1) {
       items.push(
         { text: "Edit", handler: function () { me.openEntryDialog(rec); } },
         { text: "Share", handler: function () { me.openShareDialog(rec); } },
-        { text: "Reveal secret", handler: function () { me.revealSecret(rec); } },
-        { text: "Delete", handler: function () { me.deleteEntry(rec); } }
+        { text: "Reveal secret", handler: function () { me.revealSecret(rec); } }
+      );
+    }
+    if (ownedRecs.length) {
+      items.push(
+        { text: "Export", handler: function () { me.openExportDialog(); } },
+        { text: "Delete", handler: function () { me.deleteEntries(ownedRecs); } }
       );
     }
     var menu = new Ext.menu.Menu({ cls: "otpauthentication-menu", items: items });
@@ -1103,12 +1122,46 @@ SYNO.SDS.OTPAuthentication.AppWindow = Ext.extend(SYNO.SDS.AppWindow, {
   },
 
   deleteEntry: function (rec) {
+    this.deleteEntries(rec ? [rec] : []);
+  },
+
+  deleteEntries: function (recs) {
     var me = this;
-    Ext.Msg.confirm("Delete OTP", "Delete " + rec.get("issuer") + " / " + rec.get("account") + "?", function (btn) {
+    var list = [];
+    var i;
+    if (!recs || !recs.length) { return; }
+    for (i = 0; i < recs.length; i++) {
+      if (recs[i] && !recs[i].get("is_shared")) {
+        list.push(recs[i]);
+      }
+    }
+    if (!list.length) { return; }
+    var msg;
+    if (list.length === 1) {
+      msg = "Delete " + list[0].get("issuer") + " / " + list[0].get("account") + "?";
+    } else {
+      msg = "Delete " + list.length + " selected OTP entries?";
+    }
+    Ext.Msg.confirm("Delete OTP", msg, function (btn) {
       if (btn !== "yes") { return; }
-      me.api("entries.cgi", { method: "delete", id: rec.get("id") }, true).then(function () {
+      var ids = [];
+      for (i = 0; i < list.length; i++) {
+        ids.push(list[i].get("id"));
+      }
+      me.setStatus("Deleting " + ids.length + "…");
+      me.api("entries.cgi", { method: "delete", ids: ids }, true).then(function (data) {
+        var n = (data && data.deleted_count) || 0;
+        var f = (data && data.failed_count) || 0;
+        if (f) {
+          me.setStatus("Deleted " + n + "; " + f + " failed", true);
+        } else {
+          me.setStatus("Deleted " + n + " entr" + (n === 1 ? "y" : "ies") + ".");
+        }
         me.reloadList(true);
-      }).catch(function (err) { me.setStatus(err.message, true); });
+      }).catch(function (err) {
+        me.setStatus(err.message, true);
+        me.reloadList(true);
+      });
     });
   },
 
@@ -1398,7 +1451,14 @@ SYNO.SDS.OTPAuthentication.AppWindow = Ext.extend(SYNO.SDS.AppWindow, {
 
   openExportDialog: function () {
     var me = this;
-    var selected = me.grid.getSelectionModel().getSelections();
+    var selected = [];
+    var allSel = me.grid.getSelectionModel().getSelections() || [];
+    var si;
+    for (si = 0; si < allSel.length; si++) {
+      if (!allSel[si].get("is_shared")) {
+        selected.push(allSel[si]);
+      }
+    }
     var syncFormatFields = function (win, format) {
       var enc = format !== "plain";
       var setRow = function (field, show) {

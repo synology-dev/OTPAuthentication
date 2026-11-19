@@ -112,6 +112,13 @@ def dispatch(svc: OTPService, name: str, payload: dict, method: str, environ: di
         if action == "update":
             return svc.update_entry(unlock, int(payload["id"]), payload, pin=payload.get("pin", ""))
         if action == "delete":
+            ids = payload.get("ids")
+            if ids is not None and ids != "":
+                if isinstance(ids, str):
+                    ids = [int(x) for x in ids.split(",") if x]
+                else:
+                    ids = [int(x) for x in ids]
+                return svc.delete_entries(unlock, ids)
             return svc.delete_entry(unlock, int(payload["id"]))
         if action == "reveal":
             return svc.reveal_secret(unlock, int(payload["id"]), payload.get("pin", ""))

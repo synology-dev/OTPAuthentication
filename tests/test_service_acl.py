@@ -56,6 +56,54 @@ def test_owner_share_and_grantee_restrictions(env):
     assert shared2["items"] == []
 
 
+def test_batch_delete_entries(env):
+    alice = _svc("alice")
+    alice.setup_pin("123456", "123456")
+    unlock = alice.unlock("123456")
+    ids = []
+    for i in range(3):
+        created = alice.create_entry(
+            unlock["unlock_token"],
+            {
+                "issuer": f"Batch{i}",
+                "account": f"a{i}@example.com",
+                "secret": "JBSWY3DPEHPK3PXP",
+            },
+            request_id=f"bd{i}",
+        )
+        ids.append(created["id"])
+
+    bob = _svc("bob")
+    bob.setup_pin("654321", "654321")
+    bob_unlock = bob.unlock("654321")
+    bob_entry = bob.create_entry(
+        bob_unlock["unlock_token"],
+        {"issuer": "BobOnly", "account": "bob@example.com", "secret": "JBSWY3DPEHPK3PXP"},
+        request_id="bob1",
+    )["id"]
+
+    result = alice.delete_entries(unlock["unlock_token"], [ids[0], ids[0], ids[1], bob_entry, 999999])
+    assert result["deleted_count"] == 2
+    assert result["failed_count"] == 2
+    assert result["shares_removed"] == 0
+    ok_ids = {r["id"] for r in result["results"] if r["ok"]}
+    assert ok_ids == {ids[0], ids[1]}
+    fail_ids = {r["id"] for r in result["results"] if not r["ok"]}
+    assert fail_ids == {bob_entry, 999999}
+
+    listed = alice.list_entries(unlock["unlock_token"])
+    assert [it["id"] for it in listed["items"]] == [ids[2]]
+
+    single = alice.delete_entry(unlock["unlock_token"], ids[2])
+    assert single["deleted"] is True
+    listed2 = alice.list_entries(unlock["unlock_token"])
+    assert listed2["items"] == []
+
+    with pytest.raises(AppError) as empty:
+        alice.delete_entries(unlock["unlock_token"], [])
+    assert empty.value.code == "invalid"
+
+
 def test_pin_lockout_and_export_import(env):
     svc = _svc("carol")
     svc.setup_pin("111111", "111111")
@@ -233,3 +281,54 @@ def test_recover_keep_entries_remove_and_reset(env, monkeypatch):
     assert len(listed3["items"]) == 1
     assert listed3["items"][0]["id"] == entry_id
     assert listed3["items"][0]["issuer"] == "KeepMe"
+
+
+def test_delete_entries_batch(env):
+    owner = _svc("dave")
+    owner.setup_pin("123456", "123456")
+    unlock = owner.unlock("123456")
+    ids = []
+    for i in range(5):
+        created = owner.create_entry(
+            unlock["unlock_token"],
+            {
+                "issuer": f"Batch{i}",
+                "account": f"dave{i}@example.com",
+                "secret": "JBSWY3DPEHPK3PXP",
+            },
+            request_id=f"batch-{i}",
+        )
+        ids.append(created["id"])
+
+    other = _svc("erin")
+    other.setup_pin("654321", "654321")
+    other_unlock = other.unlock("654321")
+    foreign = other.create_entry(
+        other_unlock["unlock_token"],
+        {"issuer": "Other", "account": "erin@example.com", "secret": "JBSWY3DPEHPK3PXP"},
+        request_id="foreign-1",
+    )["id"]
+
+    # Soft-fail foreign + missing; delete owned in one txn
+    result = owner.delete_entries(unlock["unlock_token"], ids[:3] + [foreign, 999999, ids[0]])
+    assert result["deleted_count"] == 3
+    assert result["failed_count"] == 2
+    assert result["shares_removed"] == 0
+    ok_ids = {r["id"] for r in result["results"] if r["ok"]}
+    assert ok_ids == set(ids[:3])
+
+    listed = owner.list_entries(unlock["unlock_token"])
+    remaining = {item["id"] for item in listed["items"]}
+    assert remaining == set(ids[3:])
+
+    # Single-id path still raises for non-owner
+    with pytest.raises(AppError):
+        other.delete_entry(other_unlock["unlock_token"], ids[3])
+
+    # Empty / oversize
+    with pytest.raises(AppError) as empty:
+        owner.delete_entries(unlock["unlock_token"], [])
+    assert empty.value.code == "invalid"
+    with pytest.raises(AppError) as too_many:
+        owner.delete_entries(unlock["unlock_token"], list(range(1, 202)))
+    assert too_many.value.code == "too_many"
