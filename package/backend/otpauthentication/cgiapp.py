@@ -58,9 +58,12 @@ def handle(handler_name: str) -> None:
         result = dispatch(svc, handler_name, payload, method, environ)
         _respond(200, {"success": True, "data": result})
     except AppError as exc:
-        _respond(exc.http_status, {"success": False, "error": {"code": exc.code, "message": exc.message, **exc.extra}})
+        # DSM web server replaces CGI HTTP 500 bodies with an HTML error page, so never emit 500.
+        status = 400 if exc.http_status == 500 else exc.http_status
+        _respond(status, {"success": False, "error": {"code": exc.code, "message": exc.message, **exc.extra}})
     except Exception:
-        _respond(500, {"success": False, "error": {"code": "internal", "message": "Internal error"}})
+        # Prefer JSON 400 over 500: UI can show error.message; 500 becomes opaque HTML in DSM.
+        _respond(400, {"success": False, "error": {"code": "internal", "message": "Internal error"}})
 
 
 def dispatch(svc: OTPService, name: str, payload: dict, method: str, environ: dict) -> Any:

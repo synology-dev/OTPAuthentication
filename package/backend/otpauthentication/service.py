@@ -1029,27 +1029,44 @@ class OTPService:
     def _parse_import_content(self, content: str, password: str) -> List[OtpAccount]:
         content = content.strip()
         if content.startswith("{"):
-            blob = json.loads(content)
+            try:
+                blob = json.loads(content)
+            except json.JSONDecodeError as exc:
+                raise AppError("invalid_backup", "Invalid backup JSON") from exc
             if blob.get("format") == C.BACKUP_FORMAT:
                 if not password:
                     raise AppError("password_required", "Password required for encrypted backup")
-                plaintext = decrypt_backup_payload(password, blob)
-                data = json.loads(plaintext.decode("utf-8"))
-                accounts = []
-                for item in data.get("entries", []):
-                    accounts.append(
-                        OtpAccount(
-                            issuer=item["issuer"],
-                            account=item["account"],
-                            label=item.get("label", ""),
-                            secret=item["secret"],
-                            algorithm=item.get("algorithm", C.DEFAULT_ALGO),
-                            digits=int(item.get("digits", C.DEFAULT_DIGITS)),
-                            period=int(item.get("period", C.DEFAULT_PERIOD)),
+                try:
+                    plaintext = decrypt_backup_payload(password, blob)
+                    data = json.loads(plaintext.decode("utf-8"))
+                except Exception as exc:
+                    # Wrong password / corrupt blob → avoid HTTP 500 (DSM replaces 500 CGI with HTML).
+                    raise AppError(
+                        "invalid_backup",
+                        "Invalid encrypted backup or wrong password",
+                    ) from exc
+                try:
+                    accounts = []
+                    for item in data.get("entries", []):
+                        accounts.append(
+                            OtpAccount(
+                                issuer=item["issuer"],
+                                account=item["account"],
+                                label=item.get("label", ""),
+                                secret=item["secret"],
+                                algorithm=item.get("algorithm", C.DEFAULT_ALGO),
+                                digits=int(item.get("digits", C.DEFAULT_DIGITS)),
+                                period=int(item.get("period", C.DEFAULT_PERIOD)),
+                            )
                         )
-                    )
-                return accounts
-        return parse_otpauth_lines(content)
+                    return accounts
+                except (KeyError, TypeError, ValueError) as exc:
+                    raise AppError("invalid_backup", "Invalid backup entries") from exc
+            raise AppError("invalid_backup", "Unsupported backup format")
+        try:
+            return parse_otpauth_lines(content)
+        except ValueError as exc:
+            raise AppError("invalid_otpauth", str(exc) or "Invalid otpauth content") from exc
 
     def _cleanup_previews(self, conn, user_id: int) -> None:
         conn.execute("DELETE FROM import_previews WHERE user_id=? OR expires_at < ?", (user_id, now()))

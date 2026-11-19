@@ -108,6 +108,18 @@ def test_pin_lockout_and_export_import(env):
     assert overridden["overridden"] == 1
     assert overridden["added"] == 0
 
+    with pytest.raises(AppError) as bad_json:
+        svc.import_preview(unlock["unlock_token"], "{not-json", "")
+    assert bad_json.value.code == "invalid_backup"
+
+    with pytest.raises(AppError) as bad_pw:
+        svc.import_preview(unlock["unlock_token"], __import__("json").dumps(enc), "wrong-pass")
+    assert bad_pw.value.code == "invalid_backup"
+
+    with pytest.raises(AppError) as bad_uri:
+        svc.import_preview(unlock["unlock_token"], "otpauth://hotp/Bad:user?secret=AAAA", "")
+    assert bad_uri.value.code == "invalid_otpauth"
+
 def test_status_reports_stopped(env, monkeypatch):
     monkeypatch.delenv("OTPAUTHENTICATION_SKIP_DSM_AUTH", raising=False)
     svc = OTPService({}, dev_user="dave")

@@ -317,12 +317,9 @@
   padding-top: 8px !important;
 }
 
-/* Plain inputs (not combo wrap) */
-.otpauthentication-dialog .x-form-text,
-.otpauthentication-dialog .x-form-textarea,
-.otpauthentication-dialog .x-form-field,
-.otpauthentication-dialog textarea.x-form-field,
-.otpauthentication-dialog input.x-form-text {
+/* Plain text inputs only (not textarea — height:!important blocks native resize). */
+.otpauthentication-dialog input.x-form-text,
+.otpauthentication-dialog input.x-form-field {
   border: 1px solid var(--otp-border-strong) !important;
   border-radius: var(--otp-radius) !important;
   padding: 7px 10px !important;
@@ -336,17 +333,36 @@
   box-sizing: border-box !important;
 }
 
-/* Match textarea width to sibling text inputs */
+/*
+ * Textarea: match sibling field chrome; keep height free of !important so Ext
+ * height config and browser resize (inline height) both work. overflow != visible
+ * is required for CSS resize; body scrolls if the field grows past the window.
+ */
 .otpauthentication-dialog .x-form-element textarea.x-form-field,
 .otpauthentication-dialog .x-form-element .x-form-textarea,
 .otpauthentication-dialog textarea.x-form-textarea,
 .otpauthentication-dialog textarea.x-form-field {
   width: 100% !important;
   max-width: 100% !important;
-  height: auto !important;
   min-height: 64px;
   line-height: 1.45 !important;
-  resize: vertical;
+  border: 1px solid var(--otp-border-strong) !important;
+  border-radius: var(--otp-radius) !important;
+  padding: 7px 10px !important;
+  background: var(--otp-bg) !important;
+  color: var(--otp-text) !important;
+  box-shadow: none !important;
+  outline: none !important;
+  font-size: 13px !important;
+  box-sizing: border-box !important;
+  resize: vertical !important;
+  overflow: auto !important;
+}
+
+.otpauthentication-dialog .x-window-body,
+.otpauthentication-dialog .otpauthentication-dialog-body {
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 .otpauthentication-dialog .x-form-element > input.x-form-text {

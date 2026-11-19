@@ -43,3 +43,17 @@ otpauth://totp/megavn.net:admin?secret=SD2OT6MEZGEWJZEX&issuer=megavn.net
 def test_reject_hotp():
     with pytest.raises(ValueError):
         parse_otpauth_uri("otpauth://hotp/Example:user?secret=JBSWY3DPEHPK3PXP&counter=1")
+
+def test_parse_empty_account_with_issuer():
+    # Exporters often emit Issuer: with a blank account after the colon.
+    uri = "otpauth://totp/Customgear-vankhoa:?secret=MFRGGZDQJFSSXWUB&issuer=Customgear-vankhoa"
+    acct = parse_otpauth_uri(uri)
+    assert acct.issuer == "Customgear-vankhoa"
+    assert acct.account == ""
+    assert acct.secret == "MFRGGZDQJFSSXWUB"
+
+
+def test_reject_missing_issuer_and_account():
+    with pytest.raises(ValueError, match="missing issuer and account"):
+        parse_otpauth_uri("otpauth://totp/?secret=JBSWY3DPEHPK3PXP")
+

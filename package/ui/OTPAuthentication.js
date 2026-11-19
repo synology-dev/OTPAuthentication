@@ -1087,15 +1087,39 @@ SYNO.SDS.OTPAuthentication.AppWindow = Ext.extend(SYNO.SDS.AppWindow, {
     var win = new Ext.Window({
       title: "Import",
       modal: true,
-      width: 520,
+      width: 640,
       layout: "form",
+      labelWidth: 150,
+      defaults: { anchor: "100%" },
       cls: "otpauthentication-dialog",
       bodyCssClass: "otpauthentication-dialog-body",
       bodyStyle: "padding:16px",
       items: [
-        { xtype: "textarea", fieldLabel: "Content", height: 160, name: "content", allowBlank: false,
-          emptyText: "otpauth:// URIs, one per line (or encrypted backup JSON)" },
-        { xtype: "textfield", fieldLabel: "Password", inputType: "password", name: "password" },
+        { xtype: "textarea", fieldLabel: "Content", height: 220, name: "content", allowBlank: false,
+          emptyText: "Paste otpauth:// lines, or load a .txt / .json file",
+          listeners: {
+            change: function () { me._scheduleImportDetect(win); },
+            afterrender: function (f) {
+              var el = f.getEl();
+              if (!el) { return; }
+              el.on("keyup", function () { me._scheduleImportDetect(win); });
+              el.on("paste", function () {
+                window.setTimeout(function () { me._syncImportPasswordField(win); }, 0);
+              });
+            }
+          } },
+        { xtype: "textfield", fieldLabel: "File", name: "_importFileName", readOnly: true,
+          emptyText: "Optional — click to choose .txt or .json",
+          listeners: {
+            afterrender: function (f) {
+              var el = f.getEl();
+              if (!el) { return; }
+              el.setStyle("cursor", "pointer");
+              el.on("click", function () { me._importPickFile(win); });
+            }
+          } },
+        { xtype: "textfield", fieldLabel: "Encryption password", inputType: "password",
+          name: "password", hidden: true },
         { xtype: "displayfield", name: "preview", value: "" },
         me._dialogErrorItem()
       ],
@@ -1108,17 +1132,104 @@ SYNO.SDS.OTPAuthentication.AppWindow = Ext.extend(SYNO.SDS.AppWindow, {
           me._importConfirm(win);
         }},
         { text: "Cancel", handler: function () { win.close(); } }
-      ]
+      ],
+      listeners: {
+        close: function () {
+          if (win._importDetectTimer) { window.clearTimeout(win._importDetectTimer); }
+        }
+      }
     });
     win.show();
+    me._syncImportPasswordField(win);
+  },
+
+  _importContentNeedsPassword: function (content) {
+    var s = String(content || "").replace(/^\uFEFF/, "").trim();
+    if (!s || s.charAt(0) !== "{") { return false; }
+    try {
+      var blob = Ext.decode(s);
+      return !!(blob && blob.format === "otp-backup-v1");
+    } catch (e) {
+      return false;
+    }
+  },
+
+  _setImportFieldRowVisible: function (field, show) {
+    if (!field) { return; }
+    field.setVisible(show);
+    try {
+      var row = field.getEl() && field.getEl().up(".x-form-item");
+      if (row) { row.setDisplayed(show); }
+    } catch (e) { /* ignore */ }
+  },
+
+  _syncImportPasswordField: function (win) {
+    var contentField = win.find("name", "content")[0];
+    var pass = win.find("name", "password")[0];
+    var needs = this._importContentNeedsPassword(contentField ? contentField.getValue() : "");
+    win._importNeedsPassword = needs;
+    this._setImportFieldRowVisible(pass, needs);
+    if (!needs && pass) { pass.setValue(""); }
+    if (win.doLayout) { win.doLayout(); }
+  },
+
+  _scheduleImportDetect: function (win) {
+    var me = this;
+    if (win._importDetectTimer) { window.clearTimeout(win._importDetectTimer); }
+    win._importDetectTimer = window.setTimeout(function () {
+      me._syncImportPasswordField(win);
+    }, 250);
+  },
+
+  _importPickFile: function (win) {
+    var me = this;
+    var input = document.createElement("input");
+    input.type = "file";
+    input.accept = ".txt,.json,text/plain,application/json";
+    input.style.display = "none";
+    document.body.appendChild(input);
+    input.addEventListener("change", function () {
+      var file = input.files && input.files[0];
+      if (input.parentNode) { document.body.removeChild(input); }
+      if (!file) { return; }
+      var name = String(file.name || "");
+      if (!/\.(txt|json)$/i.test(name)) {
+        me._setDialogError(win, "Choose a .txt or .json file");
+        return;
+      }
+      if (file.size > 2 * 1024 * 1024) {
+        me._setDialogError(win, "File too large (max 2 MB)");
+        return;
+      }
+      var reader = new FileReader();
+      reader.onload = function () {
+        me._clearDialogError(win);
+        var text = String(reader.result || "");
+        var contentField = win.find("name", "content")[0];
+        if (contentField) { contentField.setValue(text); }
+        var nameField = win.find("name", "_importFileName")[0];
+        if (nameField) { nameField.setValue(name); }
+        me.setStatus("Loaded " + name);
+        me._syncImportPasswordField(win);
+      };
+      reader.onerror = function () {
+        me._setDialogError(win, "Could not read file");
+      };
+      reader.readAsText(file);
+    });
+    input.click();
   },
 
   _importPreview: function (win) {
     var me = this;
+    me._syncImportPasswordField(win);
     var content = win.find("name", "content")[0].getValue();
     var password = win.find("name", "password")[0].getValue();
     if (!String(content || "").trim()) {
       return Promise.reject({ message: "Content required" });
+    }
+    if (win._importNeedsPassword && !String(password || "")) {
+      return Promise.reject({ message: "Encryption password is required" });
     }
     return me.api("backup.cgi", {
       method: "preview",

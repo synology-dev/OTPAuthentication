@@ -44,6 +44,11 @@ Mô hình: **PIN = khóa UI/API** (cấp unlock session). OTP ciphertext dùng p
 | I3 | Trùng entry theo **issuer + account** (cùng owner) |
 | I4 | Conflict UI: **Override** / **Skip** / **Override All** / **Skip All** (+ Cancel) |
 | I5 | Override cập nhật entry cũ; Skip bỏ qua; *All áp dụng cho phần còn lại trong batch |
+| I6 | Backup JSON hỏng / sai encryption password / otpauth invalid → API `error.message` rõ trên dialog (không HTTP 500 / “Request failed (500)”) | DSM thay body CGI 500 bằng HTML |
+| I7 | otpauth path `Issuer:` (account rỗng sau `:`) hợp lệ nếu issuer (path và/hoặc `issuer=`) non-empty; lưu `account=""`. Vẫn reject khi thiếu cả issuer lẫn account, hoặc thiếu secret |
+| I8 | Dialog Import Content: mặc định rộng/cao thoải mái (dialog ~640, textarea ~220); kéo resize dọc trên `<textarea>` thật sự đổi chiều cao (không grip trang trí) | OM-35 |
+| I9 | Import nhận **paste** vào Content **và** chọn file `.txt` / `.json` (đọc client-side → điền Content); cùng Preview / Confirm / conflict | OM-36; max ~2 MB |
+| I10 | Tự nhận dạng Content: plaintext/otpauth → **ẩn** Encryption password; encrypted backup (`format: otp-backup-v1`) → **hiện** + bắt buộc khi Preview/Confirm. Re-detect khi Content đổi (debounce nhẹ) và sau load file | OM-37; mirror Export ẩn/hiện password |
 
 ## 4. Dialog / form chung
 
@@ -102,6 +107,8 @@ Mô hình: **PIN = khóa UI/API** (cấp unlock session). OTP ciphertext dùng p
 
 - 2026-11-19: Unlock on open; Cancel trên auth dialogs; không Unlock khi close.
 - 2026-11-19: Import Confirm không cần Preview; conflict Override/Skip/*All; trùng issuer+account.
+- 2026-11-19: Import otpauth `Issuer:` (account rỗng) chấp nhận khi có issuer; account lưu `""` (I7).
+- 2026-11-19: OM-35/36/37 — Import textarea rộng + resize thật (I8); load `.txt`/`.json` (I9); auto ẩn/hiện Encryption password (I10).
 - 2026-11-19: Toolbar Lock/Unlock theo trạng thái vault.
 - 2026-11-19: Forgot PIN → DSM password → xóa PIN hoặc đặt PIN mới (**không wipe OTP**; PIN chỉ khóa UI/API).
 - 2026-11-19: Icon bo góc DSM.
@@ -119,3 +126,4 @@ Mô hình: **PIN = khóa UI/API** (cấp unlock session). OTP ciphertext dùng p
 - 2026-11-19: Export encryption password tự do (không min length); label Encryption password; lỗi required rõ.
 - 2026-11-19: Đổi tên package/id/path/Ext → **OTPAuthentication**; display **OTP Authentication**; GitHub `synology-dev/OTPAuthentication`. Migrating vault từ package cũ: copy `@appdata/OTPManager` → `OTPAuthentication` (postinst tự copy nếu data mới trống).
 - 2026-11-19: Settings restyle kiểu DSM Info Center (D9) — hàng label|value + checkbox căn cột value.
+- 2026-11-19: Import lỗi parse/decrypt → AppError 400 + message (I6); tránh CGI HTTP 500 vì DSM trả HTML.

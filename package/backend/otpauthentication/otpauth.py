@@ -109,8 +109,10 @@ def _split_label(label: str, issuer_q: str) -> tuple:
         if not issuer:
             issuer = left
         account = right
-    if not account:
-        raise ValueError("missing account")
+    # Real authenticator exports often use "Issuer:" with empty account.
+    # Allow empty account when issuer (path left and/or issuer= query) is set.
+    if not issuer and not account:
+        raise ValueError("missing issuer and account")
     if not issuer:
         issuer = account
     return issuer, account
