@@ -12,7 +12,8 @@ Mô hình: **PIN = khóa UI/API** (cấp unlock session). OTP ciphertext dùng p
 | V1 | Vault có PIN: mở app → hiện popup **Unlock OTP Authentication** ngay (không cần bấm Import/Add trước) | Mở app lần đầu trong session |
 | V2 | Đóng app (X): **không** hiện lại Unlock | Sau khi unlock hoặc đang hiện Unlock rồi X |
 | V3 | Unlock có nút **Cancel** và **Unlock** | Cancel đóng dialog, vault vẫn khóa |
-| V4 | Setup PIN (lần đầu) có Cancel + hành động chính | |
+| V4 | Setup PIN (lần đầu) có Cancel + hành động chính (**Create PIN**) | PIN **không bắt buộc** |
+| V4b | **Cancel** (hoặc đóng X) dialog Set up PIN khi chưa có PIN → coi như **no PIN** (`pin_disabled` + unlock session): tắt “Checking vault status…”, **bật** Add / Import / Export; lần mở app sau không bị kẹt Checking | Không bắt buộc tạo PIN |
 | V5 | Toolbar: vault **khóa** → nhãn **Unlock**; vault **mở** → nhãn **Lock** | Cancel Unlock → phải là Unlock |
 | V5b | **Không có PIN** (chưa setup / đã disable) → **ẩn** nút Lock/Unlock | Hiện lại khi bật/setup PIN |
 | V11 | Sau **Setup PIN** / bật PIN lại → **hiện** nút; sau New PIN trống (disable) hoặc **Remove PIN protection** → **ẩn** | |
@@ -117,6 +118,7 @@ Mô hình: **PIN = khóa UI/API** (cấp unlock session). OTP ciphertext dùng p
 - 2026-11-19: OM-18 — click cột Code copy clipboard + “Copied”.
 - 2026-11-19: Click Code → copy clipboard.
 - 2026-11-19: Không PIN → ẩn nút Lock/Unlock.
+- 2026-11-19: PIN optional — Cancel/X Set up PIN lần đầu = no PIN + vault usable (V4b); không kẹt “Checking vault status…”.
 - 2026-11-19: Settings “Copy to Clipboard only” — mask CODE khi bật.
 - 2026-11-19: Phân trang grid kiểu Log Center.
 - 2026-11-19: Export bỏ PIN; re-auth bằng mật khẩu DSM; sửa căn checkbox plaintext.

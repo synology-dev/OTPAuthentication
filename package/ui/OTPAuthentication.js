@@ -531,6 +531,25 @@ SYNO.SDS.OTPAuthentication.AppWindow = Ext.extend(SYNO.SDS.AppWindow, {
     var me = this;
     if (!me._isAppActive()) { return; }
     me._closeAuthDialog();
+    // First-run Cancel / close without creating a PIN = use vault without PIN
+    // (same as empty setup → pin_disabled + unlock session).
+    var settled = false;
+    var skipToNoPin = function () {
+      if (settled || me.state.unlockToken) { return; }
+      settled = true;
+      me.api("pin.cgi", { method: "setup", pin: "", confirm: "" }, false).then(function (data) {
+        if (win && !win.isDestroyed) { win.close(); }
+        me._setPinConfigured(false);
+        me._applyUnlockSession(data, "Vault unlocked (no PIN).");
+      }).catch(function (err) {
+        if (win && !win.isDestroyed) { win.close(); }
+        if (!me.state.unlockToken) {
+          me.openNoPinSession();
+        } else {
+          me.setStatus(err.message || "Unable to open vault without PIN", true);
+        }
+      });
+    };
     var win = new Ext.Window({
       title: "Set up PIN",
       modal: true,
@@ -546,11 +565,20 @@ SYNO.SDS.OTPAuthentication.AppWindow = Ext.extend(SYNO.SDS.AppWindow, {
         me._dialogErrorItem()
       ],
       buttons: [
-        { text: "Cancel", handler: function () { win.close(); } },
+        { text: "Cancel", handler: function () {
+          // Already unlocked (e.g. Settings → Set PIN): just dismiss.
+          if (me.state.unlockToken) {
+            settled = true;
+            win.close();
+            return;
+          }
+          skipToNoPin();
+        } },
         { text: "Create PIN", cls: "otpauthentication-btn-primary", handler: function () {
           me._clearDialogError(win);
           var pin = win.find("name", "pin")[0].getValue();
           var confirm = win.find("name", "confirm")[0].getValue();
+          settled = true;
           me.api("pin.cgi", { method: "setup", pin: pin, confirm: confirm }, false).then(function (data) {
             win.close();
             if (data && data.unlock_token) {
@@ -560,13 +588,20 @@ SYNO.SDS.OTPAuthentication.AppWindow = Ext.extend(SYNO.SDS.AppWindow, {
               me._setPinConfigured(true);
               me.openUnlock();
             }
-          }).catch(function (err) { me._setDialogError(win, err); });
+          }).catch(function (err) {
+            settled = false;
+            me._setDialogError(win, err);
+          });
         }}
       ]
     });
     me._authDialog = win;
     win.on("destroy", function () {
       if (me._authDialog === win) { me._authDialog = null; }
+      // X / Esc while locked and no PIN yet → same as Cancel (do not leave UI stuck).
+      if (!settled && !me.state.unlockToken && me._isAppActive() && !me._closing) {
+        skipToNoPin();
+      }
     });
     win.show();
   },
