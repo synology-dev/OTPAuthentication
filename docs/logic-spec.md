@@ -60,6 +60,7 @@ Mô hình: **PIN = khóa UI/API** (cấp unlock session). OTP ciphertext dùng p
 | D6 | Input/combo đủ cao (~32px), không sát chữ |
 | D7 | Title dialog không sát đường kẻ header (padding ~16px tới border) |
 | D8 | Màn hình chính: grid/toolbar/paging/status inset trái–phải ~14px (border `margins`), không sát mép cửa sổ | |
+| D9 | Settings: hàng Info Center — cột label trái + value/control phải, gutter thẳng hàng; separator ngang nhẹ giữa hàng (không zebra). **Copy to Clipboard only**: label trái, checkbox cột value | |
 
 ## 5. Grid / codes
 
@@ -117,3 +118,4 @@ Mô hình: **PIN = khóa UI/API** (cấp unlock session). OTP ciphertext dùng p
 - 2026-11-19: D8 — grid/toolbar màn chính padding trái–phải ~14px.
 - 2026-11-19: Export encryption password tự do (không min length); label Encryption password; lỗi required rõ.
 - 2026-11-19: Đổi tên package/id/path/Ext → **OTPAuthentication**; display **OTP Authentication**; GitHub `synology-dev/OTPAuthentication`. Migrating vault từ package cũ: copy `@appdata/OTPManager` → `OTPAuthentication` (postinst tự copy nếu data mới trống).
+- 2026-11-19: Settings restyle kiểu DSM Info Center (D9) — hàng label|value + checkbox căn cột value.

@@ -508,20 +508,86 @@
   margin: 0 !important;
 }
 
+/* Settings — Info Center-style label | value rows (D9) */
 .otpauthentication-dialog .otpauthentication-settings {
+  margin: 0;
+  padding: 0;
   font-size: 13px;
-  line-height: 1.55;
+  line-height: 1.4;
   color: var(--otp-text);
 }
 
-.otpauthentication-dialog .otpauthentication-settings p {
-  margin: 0 0 10px;
+.otpauthentication-dialog .otpauthentication-settings-rows {
+  display: block;
 }
 
-.otpauthentication-dialog .otpauthentication-settings b {
+.otpauthentication-dialog .otpauthentication-settings-row {
+  display: grid;
+  grid-template-columns: minmax(132px, 38%) 1fr;
+  column-gap: 16px;
+  align-items: center;
+  padding: 10px 2px;
+  border-bottom: 1px solid var(--otp-border);
+  background: var(--otp-bg);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.otpauthentication-dialog .otpauthentication-settings-row:last-child {
+  border-bottom: 0;
+}
+
+.otpauthentication-dialog .otpauthentication-settings-rows .otpauthentication-settings-row:last-child {
+  border-bottom: 1px solid var(--otp-border);
+}
+
+.otpauthentication-dialog .otpauthentication-settings-label {
   color: var(--otp-muted);
-  font-weight: 600;
-  margin-right: 6px;
+  font-weight: 400;
+  text-align: left;
+}
+
+.otpauthentication-dialog .otpauthentication-settings-value {
+  color: var(--otp-text);
+  font-weight: 400;
+  text-align: left;
+  min-width: 0;
+}
+
+.otpauthentication-dialog .otpauthentication-settings-pref-row {
+  margin: 0;
+  padding: 10px 2px;
+}
+
+/* Flatten Ext wrappers so label + checkbox stay grid children of the row */
+.otpauthentication-dialog .otpauthentication-settings-pref-row .x-panel-bwrap,
+.otpauthentication-dialog .otpauthentication-settings-pref-row .x-panel-body,
+.otpauthentication-dialog .otpauthentication-settings-pref-row .x-box-inner {
+  display: contents;
+}
+
+.otpauthentication-dialog .otpauthentication-settings-pref-row .otpauthentication-settings-label {
+  grid-column: 1;
+}
+
+.otpauthentication-dialog .otpauthentication-settings-pref-row .otpauthentication-settings-value,
+.otpauthentication-dialog .otpauthentication-settings-pref-row .x-form-check-wrap {
+  grid-column: 2;
+  display: flex !important;
+  align-items: center;
+  margin: 0 !important;
+  padding: 0 !important;
+  float: none !important;
+  justify-self: start;
+}
+
+.otpauthentication-dialog .otpauthentication-settings-pref-row input[type="checkbox"] {
+  position: static !important;
+  float: none !important;
+  margin: 0 !important;
+  width: 14px;
+  height: 14px;
+  vertical-align: middle;
 }
 
 /* Dialog footer / buttons */

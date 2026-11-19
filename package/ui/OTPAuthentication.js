@@ -1363,27 +1363,40 @@ SYNO.SDS.OTPAuthentication.AppWindow = Ext.extend(SYNO.SDS.AppWindow, {
       var pinBtn = data.pin_set
         ? { text: "Change PIN", cls: "otpauthentication-btn-primary", handler: function () { win.close(); me.openChangePin(); } }
         : { text: "Set PIN", cls: "otpauthentication-btn-primary", handler: function () { win.close(); me.openSetupPin(); } };
+      var enc = Ext.util.Format.htmlEncode;
+      var settingsRow = function (label, value) {
+        return "<div class=\"otpauthentication-settings-row\">" +
+          "<span class=\"otpauthentication-settings-label\">" + enc(label) + "</span>" +
+          "<span class=\"otpauthentication-settings-value\">" + enc(value) + "</span></div>";
+      };
       var win = new Ext.Window({
         title: "Settings",
         modal: true,
-        width: 400,
-        layout: "form",
+        width: 420,
+        layout: "auto",
         cls: "otpauthentication-dialog",
         bodyCssClass: "otpauthentication-dialog-body",
-        bodyStyle: "padding:16px",
+        bodyStyle: "padding:12px 16px",
         items: [
-          { xtype: "displayfield", cls: "otpauthentication-settings", value:
-            "<p><b>User:</b> " + Ext.util.Format.htmlEncode(data.username || "") +
-            "</p><p><b>App version:</b> " + Ext.util.Format.htmlEncode(data.app_version || "") +
-            "</p><p><b>Idle timeout:</b> " + data.idle_timeout + "s (read-only)</p>" +
-            "<p><b>Absolute timeout:</b> " + data.absolute_timeout + "s (read-only)</p>" },
-          { xtype: "checkbox", boxLabel: "Copy to Clipboard only", name: "clipboardOnly",
-            checked: !!me.state.clipboardOnly,
-            hideLabel: true,
-            itemCls: "otpauthentication-check",
-            listeners: {
-              check: function (cb, checked) { me._setClipboardOnly(checked); }
-            }
+          { xtype: "box", cls: "otpauthentication-settings", html:
+            "<div class=\"otpauthentication-settings-rows\">" +
+            settingsRow("User", data.username || "") +
+            settingsRow("App version", data.app_version || "") +
+            settingsRow("Idle timeout", data.idle_timeout + "s (read-only)") +
+            settingsRow("Absolute timeout", data.absolute_timeout + "s (read-only)") +
+            "</div>" },
+          { xtype: "container", cls: "otpauthentication-settings-row otpauthentication-settings-pref-row",
+            items: [
+              { xtype: "box", cls: "otpauthentication-settings-label",
+                html: enc("Copy to Clipboard only") },
+              { xtype: "checkbox", hideLabel: true, name: "clipboardOnly",
+                checked: !!me.state.clipboardOnly,
+                cls: "otpauthentication-settings-value",
+                listeners: {
+                  check: function (cb, checked) { me._setClipboardOnly(checked); }
+                }
+              }
+            ]
           }
         ],
         buttons: [
