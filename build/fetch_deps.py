@@ -86,14 +86,15 @@ def main() -> int:
     with tempfile.TemporaryDirectory() as tmp:
         tmp_path = Path(tmp)
         # Resolve cryptography with --no-deps so pip markers for newer CPython
-        # do not block the DSM Python 3.8 wheel selection.
+        # do not block the DSM Python 3.9 wheel selection.
+        # Use 3.9.2 (not "39"/3.9.0): cryptography Requires-Python excludes 3.9.0/3.9.1.
         try:
             _pip_download(
                 tmp_path,
                 [f"cryptography=={CRYPTO_VERSION}"],
                 platforms,
-                python_version="38",
-                abis=["abi3", "cp38"],
+                python_version="3.9.2",
+                abis=["abi3", "cp39"],
                 no_deps=True,
             )
         except subprocess.CalledProcessError:
@@ -101,7 +102,7 @@ def main() -> int:
                 tmp_path,
                 [f"cryptography=={CRYPTO_VERSION}"],
                 platforms,
-                python_version="38",
+                python_version="3.9.2",
                 abis=["abi3"],
                 no_deps=True,
             )
@@ -112,8 +113,8 @@ def main() -> int:
                     tmp_path,
                     [f"cffi=={CFFI_VERSION}"],
                     platforms,
-                    python_version="38",
-                    abis=["cp38"],
+                    python_version="3.9.2",
+                    abis=["cp39"],
                     no_deps=True,
                 )
             except subprocess.CalledProcessError as exc:
@@ -144,16 +145,16 @@ def main() -> int:
             print(exc, file=sys.stderr)
             return 3
 
-    cp38 = dest / args.target / "cp38"
-    if cp38.exists():
-        shutil.rmtree(cp38)
-    shutil.copytree(out, cp38)
+    cp39 = dest / args.target / "cp39"
+    if cp39.exists():
+        shutil.rmtree(cp39)
+    shutil.copytree(out, cp39)
 
     manifest = {
         "crypto": CRYPTO_VERSION,
         "cffi": None if args.target == "armv7" else CFFI_VERSION,
         "target": args.target,
-        "python_baseline": "3.8",
+        "python_baseline": "3.9",
         "note": "Wheels extracted for PYTHONPATH; verify on DSM before release.",
         "armv7_cffi": "missing_public_wheel" if args.target == "armv7" else "bundled",
     }

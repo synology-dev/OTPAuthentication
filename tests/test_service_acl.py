@@ -5,18 +5,18 @@ from pathlib import Path
 
 import pytest
 
-from otpmanager.service import AppError, OTPService
+from otpauthentication.service import AppError, OTPService
 
 
 @pytest.fixture()
 def env(tmp_path, monkeypatch):
-    monkeypatch.setenv("OTPMANAGER_DATA_DIR", str(tmp_path))
-    monkeypatch.setenv("OTPMANAGER_SKIP_DSM_AUTH", "1")
+    monkeypatch.setenv("OTPAUTHENTICATION_DATA_DIR", str(tmp_path))
+    monkeypatch.setenv("OTPAUTHENTICATION_SKIP_DSM_AUTH", "1")
     return tmp_path
 
 
 def _svc(user: str) -> OTPService:
-    os.environ["OTPMANAGER_SKIP_DSM_AUTH"] = "1"
+    os.environ["OTPAUTHENTICATION_SKIP_DSM_AUTH"] = "1"
     svc = OTPService({}, dev_user=user)
     svc.set_enabled(True)
     return svc
@@ -109,7 +109,7 @@ def test_pin_lockout_and_export_import(env):
     assert overridden["added"] == 0
 
 def test_status_reports_stopped(env, monkeypatch):
-    monkeypatch.delenv("OTPMANAGER_SKIP_DSM_AUTH", raising=False)
+    monkeypatch.delenv("OTPAUTHENTICATION_SKIP_DSM_AUTH", raising=False)
     svc = OTPService({}, dev_user="dave")
     svc.set_enabled(False)
     st = svc.pin_status()
@@ -117,7 +117,7 @@ def test_status_reports_stopped(env, monkeypatch):
     assert st["enabled"] is False
     svc.set_enabled(True)
     # without skip auth, identity still works via environ HTTP header set by dev_user
-    monkeypatch.setenv("OTPMANAGER_SKIP_DSM_AUTH", "1")
+    monkeypatch.setenv("OTPAUTHENTICATION_SKIP_DSM_AUTH", "1")
     svc2 = OTPService({}, dev_user="dave")
     svc2.set_enabled(True)
     st2 = svc2.pin_status()
@@ -166,7 +166,7 @@ def test_empty_new_pin_disables_and_list_all(env):
 
 
 def test_recover_keep_entries_remove_and_reset(env, monkeypatch):
-    monkeypatch.setenv("OTPMANAGER_DEV_PASSWORD", "dsm-pass")
+    monkeypatch.setenv("OTPAUTHENTICATION_DEV_PASSWORD", "dsm-pass")
     svc = _svc("erin")
     svc.setup_pin("123456", "123456")
     unlock = svc.unlock("123456")

@@ -1,26 +1,48 @@
 #!/bin/sh
 set -eu
-PKG_DIR="/var/packages/OTPManager"
+PKG_DIR="/var/packages/OTPAuthentication"
 VAR_DIR="${PKG_DIR}/var"
 TARGET="${SYNOPKG_PKGDEST:-${PKG_DIR}/target}"
+# Legacy package id (pre-rename); copy vault once if new data dir is empty.
+OLD_VAR="/var/packages/OTPManager/var"
+OLD_APPDATA="/volume1/@appdata/OTPManager"
 
 mkdir -p "${VAR_DIR}"
-# Package scripts run as OTPManager; DSM synoscgi executes ui/*.cgi as user `http`.
-chown -R OTPManager:http "${VAR_DIR}" 2>/dev/null || chown -R OTPManager:OTPManager "${VAR_DIR}" 2>/dev/null || true
+# Package scripts run as OTPAuthentication; DSM synoscgi executes ui/*.cgi as user `http`.
+chown -R OTPAuthentication:http "${VAR_DIR}" 2>/dev/null || chown -R OTPAuthentication:OTPAuthentication "${VAR_DIR}" 2>/dev/null || true
 chmod 770 "${VAR_DIR}" || true
+
+# Migrate vault from OTPManager → OTPAuthentication when installing after package-id rename.
+# Prefer real files under @appdata; fall back to /var/packages/*/var.
+# Copy named files (otp.db/dek) — directory glob into a symlink can fail silently on BusyBox.
+SRC=""
+if [ -f "${OLD_APPDATA}/otp.db" ] || [ -f "${OLD_APPDATA}/dek" ]; then
+  SRC="${OLD_APPDATA}"
+elif [ -f "${OLD_VAR}/otp.db" ] || [ -f "${OLD_VAR}/dek" ]; then
+  SRC="${OLD_VAR}"
+fi
+if [ -n "${SRC}" ]; then
+  if [ ! -f "${VAR_DIR}/otp.db" ] && [ -f "${SRC}/otp.db" ]; then
+    cp -a "${SRC}/otp.db" "${VAR_DIR}/otp.db" || true
+  fi
+  if [ ! -f "${VAR_DIR}/dek" ] && [ -f "${SRC}/dek" ]; then
+    cp -a "${SRC}/dek" "${VAR_DIR}/dek" || true
+  fi
+fi
 
 # Ensure CGI wrappers executable
 find "${TARGET}/ui/webapi" -type f -name '*.cgi' -exec chmod 755 {} \; 2>/dev/null || true
 chmod 755 "${TARGET}/bin/run-python" 2>/dev/null || true
-chown -R OTPManager:OTPManager "${TARGET}" 2>/dev/null || true
+chown -R OTPAuthentication:OTPAuthentication "${TARGET}" 2>/dev/null || true
 
-# Initialize schema/key using package python launcher when possible
+# Initialize schema/key using package python launcher when possible.
+# If vault files were migrated, initialize is idempotent (keeps existing dek/db).
 if [ -x "${TARGET}/bin/run-python" ]; then
-  OTPMANAGER_DATA_DIR="${VAR_DIR}" OTPMANAGER_SKIP_DSM_AUTH=1 OTPMANAGER_DEV_USER=install \
-    "${TARGET}/bin/run-python" -c 'from otpmanager.paths import ensure_data_dir, db_path; from otpmanager.db import Database; from otpmanager.service import OTPService; ensure_data_dir(); Database(str(db_path())).initialize(); OTPService({}); print("initialized")' || true
+  OTPAUTHENTICATION_DATA_DIR="${VAR_DIR}" OTPAUTHENTICATION_SKIP_DSM_AUTH=1 OTPAUTHENTICATION_DEV_USER=install \
+    "${TARGET}/bin/run-python" -c 'from otpauthentication.paths import ensure_data_dir, db_path; from otpauthentication.db import Database; from otpauthentication.service import OTPService; ensure_data_dir(); Database(str(db_path())).initialize(); OTPService({}); print("initialized")' || true
 fi
 
-chown -R OTPManager:http "${VAR_DIR}" 2>/dev/null || true
+chown -R OTPAuthentication:http "${VAR_DIR}" 2>/dev/null || true
 find "${VAR_DIR}" -type f -exec chmod 660 {} \; 2>/dev/null || true
 chmod 770 "${VAR_DIR}" || true
 

@@ -1,4 +1,4 @@
-# OTP Manager
+# OTP Authentication
 
 Self-hosted TOTP authenticator vault for Synology DSM 7.x.
 
@@ -17,7 +17,7 @@ chmod +x build.sh
 VERSION=1.0.0-001 TARGET=x86_64 ./build.sh
 ```
 
-Artifacts land in `dist/OTPManager-<version>-<target>.spk`.
+Artifacts land in `dist/OTPAuthentication-<version>-<target>.spk`.
 
 Targets: `x86_64`, `aarch64`, `armv7`.
 

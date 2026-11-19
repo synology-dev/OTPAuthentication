@@ -8,7 +8,7 @@ from .cgiapp import handle
 
 
 def main() -> None:
-    handle(os.environ.get("OTPMANAGER_HANDLER", "pin"))
+    handle(os.environ.get("OTPAUTHENTICATION_HANDLER", "pin"))
 
 
 if __name__ == "__main__":

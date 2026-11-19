@@ -89,7 +89,7 @@ class OTPService:
 
     def _require_enabled(self) -> None:
         if not self.is_enabled() and os.environ.get(C.ENV_SKIP_DSM_AUTH) != "1":
-            raise AppError("package_stopped", "OTP Manager is stopped", 503)
+            raise AppError("package_stopped", "OTP Authentication is stopped", 503)
 
     def _user_row(self, conn, identity: DsmIdentity):
         return ensure_user(conn, identity.dsm_uid, identity.username)
@@ -525,10 +525,10 @@ class OTPService:
                 raise AppError("forbidden", "Not allowed", 403)
             grantee = get_user_by_username(conn, username)
             if grantee is None or not grantee["pin_hash"]:
-                # Recipient must have initialized OTP Manager
+                # Recipient must have initialized OTP Authentication
                 if not resolve_local_username(username):
                     raise AppError("invalid_recipient", "User not found")
-                raise AppError("recipient_not_ready", "User has not set up OTP Manager yet")
+                raise AppError("recipient_not_ready", "User has not set up OTP Authentication yet")
             try:
                 conn.execute(
                     "INSERT INTO shares(entry_id, grantee_id, shared_at) VALUES (?, ?, ?)",

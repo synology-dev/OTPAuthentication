@@ -1,5 +1,5 @@
 #!/bin/sh
-# Probe system Python 3 and run with OTP Manager deps on PYTHONPATH.
+# Probe system Python 3 and run with OTP Authentication deps on PYTHONPATH.
 # Avoid consuming stdin so `run-python - <<'PY'` and pipes keep working.
 set -eu
 
@@ -11,14 +11,14 @@ candidates="/usr/bin/python3 /usr/local/bin/python3"
 
 PY=""
 for c in $candidates; do
-  if [ -x "$c" ] && "$c" -c 'import sys; raise SystemExit(0 if sys.version_info >= (3, 8) else 1)'; then
+  if [ -x "$c" ] && "$c" -c 'import sys; raise SystemExit(0 if sys.version_info >= (3, 9) else 1)'; then
     PY="$c"
     break
   fi
 done
 
 if [ -z "$PY" ]; then
-  echo "OTPManager: no supported system Python 3.8+ found" >&2
+  echo "OTPAuthentication: no supported system Python 3.9+ found" >&2
   exit 127
 fi
 
@@ -57,7 +57,7 @@ export PYTHONWARNINGS="${PYTHONWARNINGS:-ignore}"
 
 # Fail closed if cryptography missing when deps expected.
 if ! "$PY" -c 'import importlib.util; raise SystemExit(0 if importlib.util.find_spec("cryptography") else 1)'; then
-  echo "OTPManager: cryptography dependency missing for this Python/CPU" >&2
+  echo "OTPAuthentication: cryptography dependency missing for this Python/CPU" >&2
   exit 2
 fi
 

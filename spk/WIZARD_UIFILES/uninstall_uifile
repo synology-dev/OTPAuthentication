@@ -1,5 +1,5 @@
 [{
-  "step_title": "Remove OTP Manager data",
+  "step_title": "Remove OTP Authentication data",
   "items": [{
     "type": "multiselect",
     "desc": "Data options",

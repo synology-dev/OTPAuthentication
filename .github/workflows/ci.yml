@@ -11,11 +11,13 @@ permissions:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    # ubuntu-22.04 keeps setup-python binaries for older CPythons if matrix expands;
+    # cryptography 50+ / pytest 9+ currently require >=3.9 / >=3.10 so 3.8–3.9 are omitted.
+    runs-on: ubuntu-22.04
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - uses: actions/setup-python@42375524e23c412d93fb67b49958b491fce71c38 # v5.4.0
@@ -89,7 +91,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
         with:
-          name: OTPManager-${{ matrix.target }}
+          name: OTPAuthentication-${{ matrix.target }}
           path: |
             dist/*.spk
             dist/*.sha256

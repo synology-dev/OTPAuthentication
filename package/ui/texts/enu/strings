@@ -1,2 +1,2 @@
-app:title=OTP Manager
+app:title=OTP Authentication
 app:desc=Self-hosted TOTP authenticator vault for DSM users

@@ -142,7 +142,7 @@ def verify_dsm_password(environ: dict, password: str) -> bool:
 
     Uses SYNO.Core.User.PasswordConfirm against the local DSM webAPI, forwarding
     the caller's Cookie / SynoToken. In skip-auth (dev/test) mode, accepts any
-    non-empty password unless OTPMANAGER_DEV_PASSWORD is set.
+    non-empty password unless OTPAUTHENTICATION_DEV_PASSWORD is set.
     """
     if not isinstance(password, str) or not password:
         return False

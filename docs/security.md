@@ -9,7 +9,7 @@
 
 ## Controls
 
-- AES-256-GCM at rest with package DEK (`/var/packages/OTPManager/var/dek`).
+- AES-256-GCM at rest with package DEK (`/var/packages/OTPAuthentication/var/dek`).
 - PIN: PBKDF2-HMAC-SHA256, 6–12 digits, lockout/cooldown; unlock session only (not a per-user DEK).
 - Unlock tokens hashed at rest, idle + absolute timeouts; polling does not extend idle timeout.
 - CSRF token bound to unlock session; state-changing requests require POST.
@@ -18,8 +18,6 @@
 
 ## Dependency
 
-`cryptography==47.0.0` is shipped under `package/deps/<arch>/` and selected by the Python probe (newest release that still installs on Python 3.8). Run `pip-audit -r requirements-dev.txt` before each release.
+`cryptography==50.0.2` is shipped under `package/deps/<arch>/` and selected by the Python probe (requires system Python ≥ 3.9). Run `pip-audit -r requirements-dev.txt` before each release.
 
-Known residual advisories as of the 1.0.0-005 build (fixes need cryptography 48–50, which require Python ≥ 3.9): PYSEC-2026-3552, PYSEC-2026-3553, PYSEC-2026-3554, GHSA-537c-gmf6-5ccf. Track DSM system Python upgrades; when NAS interpreters are ≥ 3.9, bump cryptography past 48 and re-verify wheels on hardware.
-
-`cryptography` 47 emits a Python 3.8 deprecation warning on import; treat that as a forward-looking publish constraint, not a runtime failure on current DSM 7.4.1.
+DSM hosts still on Python 3.8 cannot use this package crypto stack; upgrade the system interpreter or stay on an older SPK that vendors cryptography 47.

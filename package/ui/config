@@ -1,11 +1,11 @@
 {
-  "OTPManager.js": {
-    "SYNO.SDS.OTPManager.Application": {
+  "OTPAuthentication.js": {
+    "SYNO.SDS.OTPAuthentication.Application": {
       "type": "app",
-      "title": "OTP Manager",
+      "title": "OTP Authentication",
       "desc": "Self-hosted TOTP authenticator vault",
       "icon": "images/icon_{0}.png",
-      "appWindow": "SYNO.SDS.OTPManager.AppWindow",
+      "appWindow": "SYNO.SDS.OTPAuthentication.AppWindow",
       "allUsers": true,
       "grantPrivilege": "all",
       "advanceGrantPrivilege": true,

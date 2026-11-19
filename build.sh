@@ -53,14 +53,14 @@ fi
 )
 (
   cd "${SPK_DIR}"
-  tar --owner=0 --group=0 -cf "${DIST}/OTPManager-${VERSION}-${TARGET}.spk" INFO PACKAGE_ICON.PNG PACKAGE_ICON_256.PNG package.tgz scripts conf
+  tar --owner=0 --group=0 -cf "${DIST}/OTPAuthentication-${VERSION}-${TARGET}.spk" INFO PACKAGE_ICON.PNG PACKAGE_ICON_256.PNG package.tgz scripts conf
   if [ -d WIZARD_UIFILES ]; then
-    tar --owner=0 --group=0 -rf "${DIST}/OTPManager-${VERSION}-${TARGET}.spk" WIZARD_UIFILES || true
+    tar --owner=0 --group=0 -rf "${DIST}/OTPAuthentication-${VERSION}-${TARGET}.spk" WIZARD_UIFILES || true
   fi
 )
 
 # Normalize to .spk (tar file)
-SPK_PATH="${DIST}/OTPManager-${VERSION}-${TARGET}.spk"
+SPK_PATH="${DIST}/OTPAuthentication-${VERSION}-${TARGET}.spk"
 sha256sum "${SPK_PATH}" | tee "${SPK_PATH}.sha256"
 python3 "${ROOT}/build/validate_spk.py" "${SPK_PATH}"
 echo "Built ${SPK_PATH}"

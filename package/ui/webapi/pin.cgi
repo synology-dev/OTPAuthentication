@@ -5,6 +5,6 @@ if command -v readlink >/dev/null 2>&1; then
   [ -n "$RESOLVED" ] && SCRIPT="$RESOLVED"
 fi
 ROOT="$(CDPATH= cd -- "$(dirname "$SCRIPT")/../.." && pwd)"
-export OTPMANAGER_HANDLER=pin
-export OTPMANAGER_DATA_DIR="${OTPMANAGER_DATA_DIR:-/var/packages/OTPManager/var}"
-exec "$ROOT/bin/run-python" -m otpmanager.cgi_main
+export OTPAUTHENTICATION_HANDLER=pin
+export OTPAUTHENTICATION_DATA_DIR="${OTPAUTHENTICATION_DATA_DIR:-/var/packages/OTPAuthentication/var}"
+exec "$ROOT/bin/run-python" -m otpauthentication.cgi_main

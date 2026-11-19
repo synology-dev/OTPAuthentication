@@ -1,11 +1,11 @@
-// OTP Manager DSM ExtJS 3 application
-Ext.ns("SYNO.SDS.OTPManager");
+// OTP Authentication DSM ExtJS 3 application
+Ext.ns("SYNO.SDS.OTPAuthentication");
 
-SYNO.SDS.OTPManager.Application = Ext.extend(SYNO.SDS.AppInstance, {
-  appWindowName: "SYNO.SDS.OTPManager.AppWindow"
+SYNO.SDS.OTPAuthentication.Application = Ext.extend(SYNO.SDS.AppInstance, {
+  appWindowName: "SYNO.SDS.OTPAuthentication.AppWindow"
 });
 
-SYNO.SDS.OTPManager.AppWindow = Ext.extend(SYNO.SDS.AppWindow, {
+SYNO.SDS.OTPAuthentication.AppWindow = Ext.extend(SYNO.SDS.AppWindow, {
   constructor: function (cfg) {
     cfg = cfg || {};
     // DSM 7 AppInstance.initInstance only passes appInstance; AppWindow.getIcon/init
@@ -28,7 +28,7 @@ SYNO.SDS.OTPManager.AppWindow = Ext.extend(SYNO.SDS.AppWindow, {
       total: 0
     };
     this._loadPrefs();
-    this.baseUrl = "/webman/3rdparty/OTPManager/webapi/";
+    this.baseUrl = "/webman/3rdparty/OTPAuthentication/webapi/";
     this._loadStyles();
     cfg = Ext.apply({
       width: 920,
@@ -38,9 +38,9 @@ SYNO.SDS.OTPManager.AppWindow = Ext.extend(SYNO.SDS.AppWindow, {
       resizable: true,
       maximizable: true,
       minimizable: true,
-      title: "OTP Manager",
+      title: "OTP Authentication",
       layout: "border",
-      cls: "otpmanager-wrap"
+      cls: "otpauthentication-wrap"
     }, cfg);
     this.store = new Ext.data.JsonStore({
       fields: ["id", "issuer", "account", "label", "code", "remaining", "is_shared", "owner", "share_count", "revision", "period", "algorithm", "digits"],
@@ -49,7 +49,7 @@ SYNO.SDS.OTPManager.AppWindow = Ext.extend(SYNO.SDS.AppWindow, {
     this.grid = this._buildGrid();
     this.toolbar = this._buildToolbar();
     this.statusBar = new Ext.BoxComponent({
-      cls: "otpmanager-status",
+      cls: "otpauthentication-status",
       html: ""
     });
     cfg.items = [
@@ -57,7 +57,7 @@ SYNO.SDS.OTPManager.AppWindow = Ext.extend(SYNO.SDS.AppWindow, {
       { region: "center", layout: "fit", border: false, margins: "0 14 0 14", items: [this.grid] },
       { region: "south", height: 24, border: false, margins: "0 14 0 14", items: [this.statusBar] }
     ];
-    SYNO.SDS.OTPManager.AppWindow.superclass.constructor.call(this, cfg);
+    SYNO.SDS.OTPAuthentication.AppWindow.superclass.constructor.call(this, cfg);
     if (!this.jsConfig && this.appInstance && this.appInstance.jsConfig) {
       this.jsConfig = this.appInstance.jsConfig;
     }
@@ -68,11 +68,11 @@ SYNO.SDS.OTPManager.AppWindow = Ext.extend(SYNO.SDS.AppWindow, {
   },
 
   _loadStyles: function () {
-    if (document.getElementById("otpmanager-css")) { return; }
+    if (document.getElementById("otpauthentication-css")) { return; }
     var link = document.createElement("link");
-    link.id = "otpmanager-css";
+    link.id = "otpauthentication-css";
     link.rel = "stylesheet";
-    link.href = "/webman/3rdparty/OTPManager/style.css?v=20261119o";
+    link.href = "/webman/3rdparty/OTPAuthentication/style.css?v=20261119o";
     document.head.appendChild(link);
   },
 
@@ -83,16 +83,16 @@ SYNO.SDS.OTPManager.AppWindow = Ext.extend(SYNO.SDS.AppWindow, {
       try {
         var d = Ext.Msg.getDialog();
         if (!d) { return; }
-        d.addClass("otpmanager-dialog");
-        d.addClass("otpmanager-msgbox");
+        d.addClass("otpauthentication-dialog");
+        d.addClass("otpauthentication-msgbox");
         if (d.buttons) {
           Ext.iterate(d.buttons, function (key, btn) {
             if (!btn || !btn.addClass) { return; }
             var label = String(btn.text || (btn.getText && btn.getText()) || "").toLowerCase();
             if (key === "ok" || key === "yes" || label === "ok" || label === "yes") {
-              btn.addClass("otpmanager-btn-primary");
+              btn.addClass("otpauthentication-btn-primary");
             } else {
-              btn.removeClass("otpmanager-btn-primary");
+              btn.removeClass("otpauthentication-btn-primary");
             }
           });
         }
@@ -100,7 +100,7 @@ SYNO.SDS.OTPManager.AppWindow = Ext.extend(SYNO.SDS.AppWindow, {
           d.el.select(".x-btn").each(function (el) {
             var text = String(el.dom.innerText || "").replace(/\s+/g, " ").trim().toLowerCase();
             if (text === "ok" || text === "yes") {
-              el.addClass("otpmanager-btn-primary");
+              el.addClass("otpauthentication-btn-primary");
             }
           });
         }
@@ -130,9 +130,9 @@ SYNO.SDS.OTPManager.AppWindow = Ext.extend(SYNO.SDS.AppWindow, {
   _buildToolbar: function () {
     var me = this;
     return new Ext.Toolbar({
-      cls: "otpmanager-toolbar",
+      cls: "otpauthentication-toolbar",
       items: [
-        { xtype: "textfield", emptyText: "Search", width: 180, cls: "otpmanager-search", enableKeyEvents: true, listeners: {
+        { xtype: "textfield", emptyText: "Search", width: 180, cls: "otpauthentication-search", enableKeyEvents: true, listeners: {
           keyup: { buffer: 300, fn: function (f) {
             me.state.query = f.getValue();
             me.state.page = 1;
@@ -146,7 +146,7 @@ SYNO.SDS.OTPManager.AppWindow = Ext.extend(SYNO.SDS.AppWindow, {
           me.reloadList();
         } },
         "->",
-        { text: "Add", cls: "otpmanager-btn-primary", ref: "../btnAdd", handler: function () { me.openEntryDialog(); },
+        { text: "Add", cls: "otpauthentication-btn-primary", ref: "../btnAdd", handler: function () { me.openEntryDialog(); },
           listeners: { afterrender: function (b) { me.btnAdd = b; } } },
         { text: "Import", ref: "../btnImport", handler: function () { me.openImportDialog(); },
           listeners: { afterrender: function (b) { me.btnImport = b; } } },
@@ -170,7 +170,7 @@ SYNO.SDS.OTPManager.AppWindow = Ext.extend(SYNO.SDS.AppWindow, {
     var me = this;
     return new Ext.grid.GridPanel({
       store: this.store,
-      cls: "otpmanager-grid",
+      cls: "otpauthentication-grid",
       border: false,
       stripeRows: true,
       loadMask: true,
@@ -181,12 +181,12 @@ SYNO.SDS.OTPManager.AppWindow = Ext.extend(SYNO.SDS.AppWindow, {
         { header: "Code", dataIndex: "code", width: 120, renderer: function (v) {
           var shown = v || "------";
           if (me.state.clipboardOnly && v) { shown = "••••••"; }
-          return '<span class="otpmanager-code">' + Ext.util.Format.htmlEncode(shown) + "</span>";
+          return '<span class="otpauthentication-code">' + Ext.util.Format.htmlEncode(shown) + "</span>";
         }},
         { header: "Time", dataIndex: "remaining", width: 70, renderer: function (v) {
           var rem = parseInt(v, 10);
           var low = !isNaN(rem) && rem <= 5;
-          var cls = low ? "otpmanager-time otpmanager-time-low" : "otpmanager-time";
+          var cls = low ? "otpauthentication-time otpauthentication-time-low" : "otpauthentication-time";
           var text = (v === null || v === undefined || v === "") ? "" : String(v);
           return '<span class="' + cls + '">' + Ext.util.Format.htmlEncode(text) + "</span>";
         }},
@@ -227,9 +227,9 @@ SYNO.SDS.OTPManager.AppWindow = Ext.extend(SYNO.SDS.AppWindow, {
       forceSelection: true,
       value: me.state.pageSize,
       store: pageSizes,
-      listClass: "otpmanager-combo-list",
-      cls: "otpmanager-page-size",
-      ctCls: "otpmanager-page-size-wrap",
+      listClass: "otpauthentication-combo-list",
+      cls: "otpauthentication-page-size",
+      ctCls: "otpauthentication-page-size-wrap",
       listeners: {
         afterrender: function (c) {
           /* DSM uses <img> trigger sprite — blank src so CSS SVG arrow shows (no `_` artifact) */
@@ -252,29 +252,29 @@ SYNO.SDS.OTPManager.AppWindow = Ext.extend(SYNO.SDS.AppWindow, {
     });
     me.pageSizeCombo = pageCombo;
     return new Ext.Toolbar({
-      cls: "otpmanager-paging",
+      cls: "otpauthentication-paging",
       items: [
-        { text: "|<", cls: "otpmanager-page-nav", ref: "btnFirst", tooltip: "First page",
+        { text: "|<", cls: "otpauthentication-page-nav", ref: "btnFirst", tooltip: "First page",
           handler: function () { me._goPage(1); },
           listeners: { afterrender: function (b) { me.btnPageFirst = b; } } },
-        { text: "<<", cls: "otpmanager-page-nav", ref: "btnPrev", tooltip: "Previous page",
+        { text: "<<", cls: "otpauthentication-page-nav", ref: "btnPrev", tooltip: "Previous page",
           handler: function () { me._goPage(me.state.page - 1); },
           listeners: { afterrender: function (b) { me.btnPagePrev = b; } } },
-        { xtype: "tbtext", text: "1", cls: "otpmanager-page-num", ref: "pageNum",
+        { xtype: "tbtext", text: "1", cls: "otpauthentication-page-num", ref: "pageNum",
           listeners: { afterrender: function (c) { me.pageNumLabel = c; } } },
-        { text: ">>", cls: "otpmanager-page-nav", ref: "btnNext", tooltip: "Next page",
+        { text: ">>", cls: "otpauthentication-page-nav", ref: "btnNext", tooltip: "Next page",
           handler: function () { me._goPage(me.state.page + 1); },
           listeners: { afterrender: function (b) { me.btnPageNext = b; } } },
-        { text: ">|", cls: "otpmanager-page-nav", ref: "btnLast", tooltip: "Last page",
+        { text: ">|", cls: "otpauthentication-page-nav", ref: "btnLast", tooltip: "Last page",
           handler: function () { me._goPage(me._pageCount()); },
           listeners: { afterrender: function (b) { me.btnPageLast = b; } } },
         "->",
-        { xtype: "tbtext", text: "Items per page", cls: "otpmanager-page-label" },
+        { xtype: "tbtext", text: "Items per page", cls: "otpauthentication-page-label" },
         pageCombo,
-        { xtype: "tbtext", text: "0 items", cls: "otpmanager-page-count",
+        { xtype: "tbtext", text: "0 items", cls: "otpauthentication-page-count",
           listeners: { afterrender: function (c) { me.pageCountLabel = c; } } },
         { xtype: "tbseparator" },
-        { text: "↻", cls: "otpmanager-page-refresh", tooltip: "Refresh",
+        { text: "↻", cls: "otpauthentication-page-refresh", tooltip: "Refresh",
           handler: function () { me.reloadList(true); } }
       ]
     });
@@ -333,7 +333,7 @@ SYNO.SDS.OTPManager.AppWindow = Ext.extend(SYNO.SDS.AppWindow, {
         { text: "Delete", handler: function () { me.deleteEntry(rec); } }
       );
     }
-    var menu = new Ext.menu.Menu({ cls: "otpmanager-menu", items: items });
+    var menu = new Ext.menu.Menu({ cls: "otpauthentication-menu", items: items });
     menu.showAt(xy);
   },
 
@@ -375,7 +375,7 @@ SYNO.SDS.OTPManager.AppWindow = Ext.extend(SYNO.SDS.AppWindow, {
       if (me._authDialog && !me._authDialog.isDestroyed) { return; }
       me._setLockedUi(true);
       if (data.package_stopped || data.enabled === false) {
-        me.setStatus("OTP Manager is stopped. Start the package in Package Center.", true);
+        me.setStatus("OTP Authentication is stopped. Start the package in Package Center.", true);
         return;
       }
       if (data.username) {
@@ -396,12 +396,12 @@ SYNO.SDS.OTPManager.AppWindow = Ext.extend(SYNO.SDS.AppWindow, {
       me._bootstrapping = false;
       if (!me._isAppActive()) { return; }
       me._setLockedUi(true);
-      me.setStatus(err.message || "Unable to reach OTP Manager API", true);
+      me.setStatus(err.message || "Unable to reach OTP Authentication API", true);
     });
   },
 
   setStatus: function (msg, isError) {
-    this.statusBar.update('<span class="' + (isError ? "otpmanager-warn" : "otpmanager-muted") + '">' +
+    this.statusBar.update('<span class="' + (isError ? "otpauthentication-warn" : "otpauthentication-muted") + '">' +
       Ext.util.Format.htmlEncode(msg || "") + "</span>");
   },
 
@@ -442,8 +442,8 @@ SYNO.SDS.OTPManager.AppWindow = Ext.extend(SYNO.SDS.AppWindow, {
       name: "_dialogError",
       hideLabel: true,
       value: "",
-      itemCls: "otpmanager-dialog-error-item",
-      cls: "otpmanager-dialog-error"
+      itemCls: "otpauthentication-dialog-error-item",
+      cls: "otpauthentication-dialog-error"
     };
   },
 
@@ -536,8 +536,8 @@ SYNO.SDS.OTPManager.AppWindow = Ext.extend(SYNO.SDS.AppWindow, {
       modal: true,
       width: 360,
       layout: "form",
-      cls: "otpmanager-dialog",
-      bodyCssClass: "otpmanager-dialog-body",
+      cls: "otpauthentication-dialog",
+      bodyCssClass: "otpauthentication-dialog-body",
       bodyStyle: "padding:16px",
       items: [
         { xtype: "displayfield", value: "Choose a 6–12 digit PIN, or leave both fields empty to disable PIN protection." },
@@ -547,7 +547,7 @@ SYNO.SDS.OTPManager.AppWindow = Ext.extend(SYNO.SDS.AppWindow, {
       ],
       buttons: [
         { text: "Cancel", handler: function () { win.close(); } },
-        { text: "Create PIN", cls: "otpmanager-btn-primary", handler: function () {
+        { text: "Create PIN", cls: "otpauthentication-btn-primary", handler: function () {
           me._clearDialogError(win);
           var pin = win.find("name", "pin")[0].getValue();
           var confirm = win.find("name", "confirm")[0].getValue();
@@ -587,12 +587,12 @@ SYNO.SDS.OTPManager.AppWindow = Ext.extend(SYNO.SDS.AppWindow, {
       });
     };
     var win = new Ext.Window({
-      title: "Unlock OTP Manager",
+      title: "Unlock OTP Authentication",
       modal: true,
       width: 360,
       layout: "form",
-      cls: "otpmanager-dialog",
-      bodyCssClass: "otpmanager-dialog-body",
+      cls: "otpauthentication-dialog",
+      bodyCssClass: "otpauthentication-dialog-body",
       bodyStyle: "padding:16px",
       items: [
         { xtype: "textfield", fieldLabel: "PIN", inputType: "password", name: "pin", allowBlank: false, enableKeyEvents: true,
@@ -602,7 +602,7 @@ SYNO.SDS.OTPManager.AppWindow = Ext.extend(SYNO.SDS.AppWindow, {
       buttons: [
         { text: "Cancel", handler: function () { win.close(); } },
         { text: "Forgot PIN", handler: function () { win.close(); me.openForgotPin(); } },
-        { text: "Unlock", cls: "otpmanager-btn-primary", handler: doUnlock }
+        { text: "Unlock", cls: "otpauthentication-btn-primary", handler: doUnlock }
       ]
     });
     me._authDialog = win;
@@ -635,8 +635,8 @@ SYNO.SDS.OTPManager.AppWindow = Ext.extend(SYNO.SDS.AppWindow, {
       modal: true,
       width: 420,
       layout: "form",
-      cls: "otpmanager-dialog",
-      bodyCssClass: "otpmanager-dialog-body",
+      cls: "otpauthentication-dialog",
+      bodyCssClass: "otpauthentication-dialog-body",
       bodyStyle: "padding:16px",
       items: [
         { xtype: "displayfield", value: "Enter your DSM account password to continue. Your OTP entries are kept; this only removes or resets PIN protection." },
@@ -646,7 +646,7 @@ SYNO.SDS.OTPManager.AppWindow = Ext.extend(SYNO.SDS.AppWindow, {
       ],
       buttons: [
         { text: "Cancel", handler: function () { win.close(); me.openUnlock(); } },
-        { text: "Continue", cls: "otpmanager-btn-primary", handler: submit }
+        { text: "Continue", cls: "otpauthentication-btn-primary", handler: submit }
       ]
     });
     me._authDialog = win;
@@ -686,8 +686,8 @@ SYNO.SDS.OTPManager.AppWindow = Ext.extend(SYNO.SDS.AppWindow, {
       modal: true,
       width: 440,
       layout: "form",
-      cls: "otpmanager-dialog",
-      bodyCssClass: "otpmanager-dialog-body",
+      cls: "otpauthentication-dialog",
+      bodyCssClass: "otpauthentication-dialog-body",
       bodyStyle: "padding:16px",
       items: [
         { xtype: "displayfield", value: "Password confirmed. Choose how to continue. OTP entries and shares are kept." },
@@ -696,7 +696,7 @@ SYNO.SDS.OTPManager.AppWindow = Ext.extend(SYNO.SDS.AppWindow, {
       buttons: [
         { text: "Cancel", handler: function () { win.close(); me.openUnlock(); } },
         { text: "Remove PIN protection", handler: function () { run("remove"); } },
-        { text: "Set a new PIN", cls: "otpmanager-btn-primary", handler: function () { run("reset"); } }
+        { text: "Set a new PIN", cls: "otpauthentication-btn-primary", handler: function () { run("reset"); } }
       ]
     });
     me._authDialog = win;
@@ -752,7 +752,7 @@ SYNO.SDS.OTPManager.AppWindow = Ext.extend(SYNO.SDS.AppWindow, {
 
   _prefKey: function (name) {
     var u = this.state.username || "";
-    return "OTPManager." + name + (u ? "." + u : "");
+    return "OTPAuthentication." + name + (u ? "." + u : "");
   },
 
   _loadPrefs: function () {
@@ -932,8 +932,8 @@ SYNO.SDS.OTPManager.AppWindow = Ext.extend(SYNO.SDS.AppWindow, {
       layout: "form",
       labelWidth: 80,
       defaults: { anchor: "100%" },
-      cls: "otpmanager-dialog",
-      bodyCssClass: "otpmanager-dialog-body",
+      cls: "otpauthentication-dialog",
+      bodyCssClass: "otpauthentication-dialog-body",
       bodyStyle: "padding:16px",
       items: [
         { xtype: "textfield", fieldLabel: "Issuer", name: "issuer", value: editing ? rec.get("issuer") : "", allowBlank: false },
@@ -942,10 +942,10 @@ SYNO.SDS.OTPManager.AppWindow = Ext.extend(SYNO.SDS.AppWindow, {
         { xtype: "textfield", fieldLabel: editing ? "New secret" : "Secret", name: "secret", allowBlank: editing },
         { xtype: "textarea", fieldLabel: "URI", name: "uri", height: 60, emptyText: "Optional otpauth:// URI" },
         { xtype: "combo", fieldLabel: "Algorithm", name: "algorithm", mode: "local", triggerAction: "all", editable: false,
-          listClass: "otpmanager-combo-list",
+          listClass: "otpauthentication-combo-list",
           store: ["SHA1", "SHA256", "SHA512"], value: editing ? rec.get("algorithm") : "SHA1" },
         { xtype: "combo", fieldLabel: "Digits", name: "digits", mode: "local", triggerAction: "all", editable: false,
-          listClass: "otpmanager-combo-list",
+          listClass: "otpauthentication-combo-list",
           store: [["6", "6"], ["8", "8"]], value: editing ? String(rec.get("digits")) : "6" },
         { xtype: "numberfield", fieldLabel: "Period", name: "period", value: editing ? rec.get("period") : 30, minValue: 15, maxValue: 300 },
         { xtype: "textfield", fieldLabel: "PIN", inputType: "password", name: "pin", hidden: !editing },
@@ -953,7 +953,7 @@ SYNO.SDS.OTPManager.AppWindow = Ext.extend(SYNO.SDS.AppWindow, {
       ],
       buttons: [
         { text: "Cancel", handler: function () { win.close(); } },
-        { text: "Save", cls: "otpmanager-btn-primary", handler: function () {
+        { text: "Save", cls: "otpauthentication-btn-primary", handler: function () {
           me._clearDialogError(win);
           var get = function (n) { return win.find("name", n)[0].getValue(); };
           var payload = {
@@ -990,7 +990,7 @@ SYNO.SDS.OTPManager.AppWindow = Ext.extend(SYNO.SDS.AppWindow, {
     var grid = new Ext.grid.GridPanel({
       height: 180,
       store: store,
-      cls: "otpmanager-grid",
+      cls: "otpauthentication-grid",
       border: false,
       columns: [
         { header: "User", dataIndex: "username", width: 160 },
@@ -1022,24 +1022,24 @@ SYNO.SDS.OTPManager.AppWindow = Ext.extend(SYNO.SDS.AppWindow, {
       title: "Share: " + rec.get("issuer"),
       modal: true,
       width: 420,
-      cls: "otpmanager-dialog",
-      bodyCssClass: "otpmanager-dialog-body",
+      cls: "otpauthentication-dialog",
+      bodyCssClass: "otpauthentication-dialog-body",
       items: [
         grid,
         {
-          xtype: "form", bodyCssClass: "otpmanager-dialog-body", bodyStyle: "padding:12px 0 0", items: [
+          xtype: "form", bodyCssClass: "otpauthentication-dialog-body", bodyStyle: "padding:12px 0 0", items: [
             { xtype: "textfield", fieldLabel: "Username", name: "username", allowBlank: false },
             me._dialogErrorItem()
           ]
         }
       ],
       buttons: [
-        { text: "Add share", cls: "otpmanager-btn-primary", handler: function () {
+        { text: "Add share", cls: "otpauthentication-btn-primary", handler: function () {
           me._clearDialogError(win);
           var username = win.items.get(1).getForm().findField("username").getValue();
           me.api("share.cgi", { method: "resolve-recipient", username: username }, true).then(function (info) {
             if (!info.ready) {
-              me._setDialogError(win, "User has not set up OTP Manager yet");
+              me._setDialogError(win, "User has not set up OTP Authentication yet");
               return;
             }
             return me.api("share.cgi", { method: "add", entry_id: rec.get("id"), username: info.username }, true);
@@ -1089,8 +1089,8 @@ SYNO.SDS.OTPManager.AppWindow = Ext.extend(SYNO.SDS.AppWindow, {
       modal: true,
       width: 520,
       layout: "form",
-      cls: "otpmanager-dialog",
-      bodyCssClass: "otpmanager-dialog-body",
+      cls: "otpauthentication-dialog",
+      bodyCssClass: "otpauthentication-dialog-body",
       bodyStyle: "padding:16px",
       items: [
         { xtype: "textarea", fieldLabel: "Content", height: 160, name: "content", allowBlank: false,
@@ -1104,7 +1104,7 @@ SYNO.SDS.OTPManager.AppWindow = Ext.extend(SYNO.SDS.AppWindow, {
           me._clearDialogError(win);
           me._importPreview(win).catch(function (err) { me._setDialogError(win, err); });
         }},
-        { text: "Confirm import", cls: "otpmanager-btn-primary", handler: function () {
+        { text: "Confirm import", cls: "otpauthentication-btn-primary", handler: function () {
           me._importConfirm(win);
         }},
         { text: "Cancel", handler: function () { win.close(); } }
@@ -1229,13 +1229,13 @@ SYNO.SDS.OTPManager.AppWindow = Ext.extend(SYNO.SDS.AppWindow, {
       title: "Import conflict",
       modal: true,
       width: 460,
-      cls: "otpmanager-dialog",
-      bodyCssClass: "otpmanager-dialog-body",
+      cls: "otpauthentication-dialog",
+      bodyCssClass: "otpauthentication-dialog-body",
       bodyStyle: "padding:16px",
       html: "<p>Duplicate entry already exists for <b>" + issuer + "</b> / <b>" + account +
         "</b> (matched by issuer + account).</p><p>Override replaces the existing entry with the imported one.</p>",
       buttons: [
-        { text: "Override", cls: "otpmanager-btn-primary", handler: function () { finish("override"); dlg.close(); } },
+        { text: "Override", cls: "otpauthentication-btn-primary", handler: function () { finish("override"); dlg.close(); } },
         { text: "Skip", handler: function () { finish("skip"); dlg.close(); } },
         { text: "Override All", handler: function () { finish("override_all"); dlg.close(); } },
         { text: "Skip All", handler: function () { finish("skip_all"); dlg.close(); } },
@@ -1276,16 +1276,16 @@ SYNO.SDS.OTPManager.AppWindow = Ext.extend(SYNO.SDS.AppWindow, {
       modal: true,
       width: 460,
       layout: "form",
-      cls: "otpmanager-dialog",
-      bodyCssClass: "otpmanager-dialog-body",
+      cls: "otpauthentication-dialog",
+      bodyCssClass: "otpauthentication-dialog-body",
       bodyStyle: "padding:16px",
       labelWidth: 180,
       items: [
         { xtype: "combo", fieldLabel: "Scope", name: "scope", mode: "local", triggerAction: "all", editable: false,
-          listClass: "otpmanager-combo-list",
+          listClass: "otpauthentication-combo-list",
           store: [["selected", "Selected"], ["all", "All owned"]], value: selected.length ? "selected" : "all" },
         { xtype: "combo", fieldLabel: "Format", name: "format", mode: "local", triggerAction: "all", editable: false,
-          listClass: "otpmanager-combo-list",
+          listClass: "otpauthentication-combo-list",
           store: [["enc", "Encrypted"], ["plain", "Plaintext"]], value: "enc",
           listeners: {
             select: function (c) { syncFormatFields(win, c.getValue()); }
@@ -1293,13 +1293,13 @@ SYNO.SDS.OTPManager.AppWindow = Ext.extend(SYNO.SDS.AppWindow, {
         { xtype: "textfield", fieldLabel: "DSM password", inputType: "password", name: "dsm_password", allowBlank: false },
         { xtype: "textfield", fieldLabel: "Encryption password", inputType: "password", name: "password" },
         { xtype: "textfield", fieldLabel: "Confirm encryption password", inputType: "password", name: "password2" },
-        { xtype: "checkbox", hideLabel: true, hidden: true, itemCls: "otpmanager-check",
+        { xtype: "checkbox", hideLabel: true, hidden: true, itemCls: "otpauthentication-check",
           name: "plain_ack",
           boxLabel: "I understand plaintext export contains 2FA secrets" },
         me._dialogErrorItem()
       ],
       buttons: [
-        { text: "Export", cls: "otpmanager-btn-primary", handler: function () {
+        { text: "Export", cls: "otpauthentication-btn-primary", handler: function () {
           me._clearDialogError(win);
           var get = function (n) { return win.find("name", n)[0].getValue(); };
           var format = get("format");
@@ -1337,7 +1337,7 @@ SYNO.SDS.OTPManager.AppWindow = Ext.extend(SYNO.SDS.AppWindow, {
             var url = URL.createObjectURL(blob);
             var a = document.createElement("a");
             a.href = url;
-            a.download = format === "plain" ? "otpmanager-export.txt" : "otpmanager-export.json";
+            a.download = format === "plain" ? "otpauthentication-export.txt" : "otpauthentication-export.json";
             a.click();
             URL.revokeObjectURL(url);
             win.close();
@@ -1361,18 +1361,18 @@ SYNO.SDS.OTPManager.AppWindow = Ext.extend(SYNO.SDS.AppWindow, {
         me._loadPrefs();
       }
       var pinBtn = data.pin_set
-        ? { text: "Change PIN", cls: "otpmanager-btn-primary", handler: function () { win.close(); me.openChangePin(); } }
-        : { text: "Set PIN", cls: "otpmanager-btn-primary", handler: function () { win.close(); me.openSetupPin(); } };
+        ? { text: "Change PIN", cls: "otpauthentication-btn-primary", handler: function () { win.close(); me.openChangePin(); } }
+        : { text: "Set PIN", cls: "otpauthentication-btn-primary", handler: function () { win.close(); me.openSetupPin(); } };
       var win = new Ext.Window({
         title: "Settings",
         modal: true,
         width: 400,
         layout: "form",
-        cls: "otpmanager-dialog",
-        bodyCssClass: "otpmanager-dialog-body",
+        cls: "otpauthentication-dialog",
+        bodyCssClass: "otpauthentication-dialog-body",
         bodyStyle: "padding:16px",
         items: [
-          { xtype: "displayfield", cls: "otpmanager-settings", value:
+          { xtype: "displayfield", cls: "otpauthentication-settings", value:
             "<p><b>User:</b> " + Ext.util.Format.htmlEncode(data.username || "") +
             "</p><p><b>App version:</b> " + Ext.util.Format.htmlEncode(data.app_version || "") +
             "</p><p><b>Idle timeout:</b> " + data.idle_timeout + "s (read-only)</p>" +
@@ -1380,6 +1380,7 @@ SYNO.SDS.OTPManager.AppWindow = Ext.extend(SYNO.SDS.AppWindow, {
           { xtype: "checkbox", boxLabel: "Copy to Clipboard only", name: "clipboardOnly",
             checked: !!me.state.clipboardOnly,
             hideLabel: true,
+            itemCls: "otpauthentication-check",
             listeners: {
               check: function (cb, checked) { me._setClipboardOnly(checked); }
             }
@@ -1401,8 +1402,8 @@ SYNO.SDS.OTPManager.AppWindow = Ext.extend(SYNO.SDS.AppWindow, {
       modal: true,
       width: 360,
       layout: "form",
-      cls: "otpmanager-dialog",
-      bodyCssClass: "otpmanager-dialog-body",
+      cls: "otpauthentication-dialog",
+      bodyCssClass: "otpauthentication-dialog-body",
       bodyStyle: "padding:16px",
       items: [
         { xtype: "displayfield", value: "Leave New PIN empty to disable PIN protection (OTP entries kept)." },
@@ -1412,7 +1413,7 @@ SYNO.SDS.OTPManager.AppWindow = Ext.extend(SYNO.SDS.AppWindow, {
         me._dialogErrorItem()
       ],
       buttons: [
-        { text: "Save", cls: "otpmanager-btn-primary", handler: function () {
+        { text: "Save", cls: "otpauthentication-btn-primary", handler: function () {
           me._clearDialogError(win);
           me.api("pin.cgi", {
             method: "change",

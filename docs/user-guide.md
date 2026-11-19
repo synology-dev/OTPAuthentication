@@ -1,8 +1,8 @@
-# OTP Manager user guide
+# OTP Authentication user guide
 
 ## First launch
 
-1. Open **OTP Manager** from the DSM main menu.
+1. Open **OTP Authentication** from the DSM main menu.
 2. Create a PIN (6–12 digits). There is no automatic PIN reset.
 3. Unlock with your PIN whenever you open the app.
 
@@ -13,7 +13,7 @@
 
 ## Share
 
-Owners can share an entry with another DSM user who has already set up OTP Manager.
+Owners can share an entry with another DSM user who has already set up OTP Authentication.
 Recipients can view/copy codes only.
 
 ## Backup

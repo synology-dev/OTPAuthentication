@@ -4,8 +4,8 @@ import base64
 
 import pytest
 
-from otpmanager.otpauth import parse_otpauth_uri, serialize_otpauth, parse_otpauth_lines
-from otpmanager.totp import generate_totp
+from otpauthentication.otpauth import parse_otpauth_uri, serialize_otpauth, parse_otpauth_lines
+from otpauthentication.totp import generate_totp
 
 
 # RFC 6238 appendix B test vectors use a fixed seed; SHA1 secret is ASCII "12345678901234567890"

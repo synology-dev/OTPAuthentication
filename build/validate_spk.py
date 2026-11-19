@@ -31,10 +31,10 @@ def main() -> int:
         with tarfile.open(fileobj=io.BytesIO(pkg.read()), mode="r:gz") as inner:
             inner_names = {m.name for m in inner.getmembers()}
             for required in (
-                "ui/OTPManager.js",
+                "ui/OTPAuthentication.js",
                 "ui/config",
                 "bin/run-python",
-                "backend/otpmanager/service.py",
+                "backend/otpauthentication/service.py",
                 "ui/webapi/pin.cgi",
             ):
                 if required not in inner_names and f"./{required}" not in inner_names:

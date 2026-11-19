@@ -1,10 +1,11 @@
-# AGENTS.md — OTP Manager
+# AGENTS.md — OTP Authentication
 
 Hướng dẫn cho agent làm việc trong repo này (Synology DSM 7 TOTP vault package).
 
 ## Product
 
-- Package name: **OTPManager** — native DSM ExtJS app + Python CGI backend.
+- Display name: **OTP Authentication**; package id: **OTPAuthentication** — native DSM ExtJS app + Python CGI backend.
+- GitHub: `synology-dev/OTPAuthentication` (`https://github.com/synology-dev/OTPAuthentication`).
 - Vault per DSM user, PIN unlock, share view-only, import/export (`otpauth://` + encrypted backup).
 - System Python 3.8+; ship `cryptography` wheels per arch (`x86_64`, `aarch64`, `armv7`).
 
@@ -18,7 +19,6 @@ Hướng dẫn cho agent làm việc trong repo này (Synology DSM 7 TOTP vault 
 | Doc | Role |
 |-----|------|
 | [docs/logic-spec.md](docs/logic-spec.md) | Đặc tả logic/UI sống — checklist test/verify |
-| [docs/PLAN.md](docs/PLAN.md) | Link tới plan chính |
 | [.cursor/plans/synology_otp_package_3471a2a5.plan.md](.cursor/plans/synology_otp_package_3471a2a5.plan.md) | Plan kiến trúc (chỉ sửa khi user yêu cầu) |
 | [docs/security.md](docs/security.md) | Mô hình bảo mật / DEK |
 | [docs/verification.md](docs/verification.md) | Smoke DSM / ma trận platform |
@@ -27,7 +27,7 @@ Hướng dẫn cho agent làm việc trong repo này (Synology DSM 7 TOTP vault 
 ## Workspace layout
 
 ```
-package/ui/          ExtJS app (OTPManager.js, style.css, images)
+package/ui/          ExtJS app (OTPAuthentication.js, style.css, images)
 package/backend/     Python service / CGI
 package/bin/         run-python wrappers
 spk/                 INFO, scripts, PACKAGE_ICON*.PNG
@@ -51,8 +51,8 @@ dist/                built .spk
 ## Implementation notes
 
 - DSM 7 AppWindow: cần `jsConfig` từ `appInstance`; API cần `X-SYNO-TOKEN`.
-- CGI chạy user `http`: data dir quyền tương thích `OTPManager:http` (thường `770`/`660`).
-- CSS app: inject `/webman/3rdparty/OTPManager/style.css` (xem `OTPManager.js`).
+- CGI chạy user `http`: data dir quyền tương thích `OTPAuthentication:http` (thường `770`/`660`).
+- CSS app: inject `/webman/3rdparty/OTPAuthentication/style.css` (xem `OTPAuthentication.js`).
 - PIN chỉ khóa UI/API (unlock session); secrets mã hóa bằng package DEK. Forgot PIN = xác thực mật khẩu DSM rồi gỡ/đặt lại PIN — **không wipe OTP** (xem logic-spec §2).
 
 ## Build / test
@@ -64,7 +64,7 @@ VERSION=1.0.0-00N TARGET=x86_64 ./build.sh
 ```
 
 UI verify trên lab NAS: Playwright/DSM desktop; checklist theo `docs/logic-spec.md`.
-Hot-copy thường: `package/ui/*` và backend → `/var/packages/OTPManager/target/` (rồi đóng/mở app hoặc hard refresh).
+Hot-copy thường: `package/ui/*` và backend → `/var/packages/OTPAuthentication/target/` (rồi đóng/mở app hoặc hard refresh).
 
 ## Deploy icons
 

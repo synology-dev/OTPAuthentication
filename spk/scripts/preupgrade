@@ -1,6 +1,6 @@
 #!/bin/sh
 set -eu
-VAR_DIR="/var/packages/OTPManager/var"
+VAR_DIR="/var/packages/OTPAuthentication/var"
 TMP="${SYNOPKG_TEMP_UPGRADE_FOLDER:-}"
 # Always use filesystem copy during preupgrade (BusyBox-safe). Prefer consistency
 # over in-process SQLite backup here; DB is quiesced because package was stopped.

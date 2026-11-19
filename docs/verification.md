@@ -10,7 +10,7 @@ pytest -q
 
 ## DSM smoke (x86_64 — DS220+ / DSM 7.4.1 / Python 3.8.15)
 
-Verified 2026-11-19 on lab NAS (`OTPManager-1.0.0-004` … `1.0.0-006` hot-patched UI/CGI):
+Verified 2026-11-19 on lab NAS (`OTPAuthentication-1.0.0-004` … `1.0.0-006` hot-patched UI/CGI):
 
 1. Fresh install + start OK (package-user ownership of `@appdata`; vault dirs `770` / files `660`, group `http` for CGI).
 2. Start/stop/status lifecycle OK (`run-python` BusyBox/stdin-safe; scripts avoid fragile heredocs).
@@ -25,7 +25,7 @@ Verified 2026-11-19 on lab NAS (`OTPManager-1.0.0-004` … `1.0.0-006` hot-patch
 
 Pass on DS220+ / DSM 7.4.1 as user `nas` (synthetic vault PIN + TOTP secret `JBSWY3DPEHPK3PXP`):
 
-1. Launch OTP Manager AppWindow OK (`jsConfig` handoff + SynoToken headers).
+1. Launch OTP Authentication AppWindow OK (`jsConfig` handoff + SynoToken headers).
 2. Unlock vault OK.
 3. Add OTP (issuer `Example`, account `nas@example.com`) OK.
 4. Live 6-digit code + remaining seconds refresh in grid (`status: 1 entries`).

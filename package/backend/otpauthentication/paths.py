@@ -1,4 +1,4 @@
-"""Filesystem locations for OTP Manager."""
+"""Filesystem locations for OTP Authentication."""
 
 from __future__ import annotations
 
@@ -9,7 +9,7 @@ from . import constants as C
 
 
 def package_root() -> Path:
-    # .../target/backend/otpmanager/paths.py -> target
+    # .../target/backend/otpauthentication/paths.py -> target
     return Path(__file__).resolve().parents[2]
 
 

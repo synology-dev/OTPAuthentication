@@ -5,7 +5,7 @@ import json
 import pytest
 from cryptography.exceptions import InvalidTag
 
-from otpmanager.crypto import (
+from otpauthentication.crypto import (
     decrypt_backup_payload,
     decrypt_secret,
     encrypt_backup_payload,

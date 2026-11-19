@@ -1,6 +1,6 @@
 #!/bin/sh
 set -eu
-VAR_DIR="/var/packages/OTPManager/var"
+VAR_DIR="/var/packages/OTPAuthentication/var"
 TMP="${SYNOPKG_TEMP_UPGRADE_FOLDER:-}"
 mkdir -p "${VAR_DIR}"
 chmod 700 "${VAR_DIR}" || true

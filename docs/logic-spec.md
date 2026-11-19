@@ -1,4 +1,4 @@
-# OTP Manager — đặc tả logic (UI / hành vi)
+# OTP Authentication — đặc tả logic (UI / hành vi)
 
 Tài liệu sống để test/verify. Cập nhật khi có yêu cầu hoặc thay đổi hành vi.
 Nhãn UI hiện tại chủ yếu tiếng Anh (khớp app).
@@ -9,7 +9,7 @@ Mô hình: **PIN = khóa UI/API** (cấp unlock session). OTP ciphertext dùng p
 
 | ID | Hành vi | Ghi chú test |
 |----|---------|--------------|
-| V1 | Vault có PIN: mở app → hiện popup **Unlock OTP Manager** ngay (không cần bấm Import/Add trước) | Mở app lần đầu trong session |
+| V1 | Vault có PIN: mở app → hiện popup **Unlock OTP Authentication** ngay (không cần bấm Import/Add trước) | Mở app lần đầu trong session |
 | V2 | Đóng app (X): **không** hiện lại Unlock | Sau khi unlock hoặc đang hiện Unlock rồi X |
 | V3 | Unlock có nút **Cancel** và **Unlock** | Cancel đóng dialog, vault vẫn khóa |
 | V4 | Setup PIN (lần đầu) có Cancel + hành động chính | |
@@ -51,7 +51,7 @@ Mô hình: **PIN = khóa UI/API** (cấp unlock session). OTP ciphertext dùng p
 |----|---------|
 | D0 | Lỗi API: hiện `error.message` (fallback `error.code`), **không** nuốt thành “Network error” khi body có JSON lỗi |
 | D0b | Lỗi thao tác form: hiện **trên dialog/form** đang mở; status cửa sổ chính chỉ cho thao tác grid/app-level |
-| D0c | Chữ lỗi validate/dialog (`_dialogError`, API `error.message`, invalid): **đỏ** `#d94841` (`--otp-warn`) dưới `.otpmanager-dialog` |
+| D0c | Chữ lỗi validate/dialog (`_dialogError`, API `error.message`, invalid): **đỏ** `#d94841` (`--otp-warn`) dưới `.otpauthentication-dialog` |
 | D1 | Mọi popup của app có **Close** hoặc **Cancel** (không chỉ một nút primary) |
 | D2 | Skin DSM 7 light: toolbar, grid, dialog (accent `#2481eb`) |
 | D3 | Không viền đen thô; viền mềm `#d0d4d9` / soft shadow |
@@ -116,3 +116,4 @@ Mô hình: **PIN = khóa UI/API** (cấp unlock session). OTP ciphertext dùng p
 - 2026-11-19: Chữ lỗi validate/dialog màu đỏ toàn bộ form.
 - 2026-11-19: D8 — grid/toolbar màn chính padding trái–phải ~14px.
 - 2026-11-19: Export encryption password tự do (không min length); label Encryption password; lỗi required rõ.
+- 2026-11-19: Đổi tên package/id/path/Ext → **OTPAuthentication**; display **OTP Authentication**; GitHub `synology-dev/OTPAuthentication`. Migrating vault từ package cũ: copy `@appdata/OTPManager` → `OTPAuthentication` (postinst tự copy nếu data mới trống).

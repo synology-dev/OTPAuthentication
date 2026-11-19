@@ -1,13 +1,13 @@
 {
-  "package": "OTPManager",
+  "package": "OTPAuthentication",
   "os_min_ver": "7.0-40337",
-  "python_min": "3.8",
+  "python_min": "3.9",
   "python_max_tested": "3.14",
   "crypto": {
     "name": "cryptography",
-    "version": "47.0.0",
+    "version": "50.0.2",
     "cffi_version": "1.17.1",
-    "note": "Latest cryptography that still supports Python 3.8 (DSM baseline). Review advisories before each release; some fixes require 3.9+ only builds."
+    "note": "cryptography 50+ requires Python >=3.9 (drops 3.8). Review advisories before each release."
   },
   "targets": [
     {

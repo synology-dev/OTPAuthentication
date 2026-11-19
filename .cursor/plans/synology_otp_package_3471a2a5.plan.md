@@ -33,7 +33,7 @@ todos:
 
 ## 1. Quyết định đã chốt
 
-- Bản chính duy nhất: [.cursor/plans/synology_otp_package_3471a2a5.plan.md](synology_otp_package_3471a2a5.plan.md). Commit file này; `docs/PLAN.md` chỉ dẫn tới bản chính.
+- Bản chính duy nhất: [.cursor/plans/synology_otp_package_3471a2a5.plan.md](synology_otp_package_3471a2a5.plan.md). Commit file này.
 - Repository: [synology-dev/OTPManager](https://github.com/synology-dev/OTPManager), SSH remote `git@github.com:synology-dev/OTPManager.git`.
 - Package ID `OTPManager`; tên hiển thị `OTP Manager`; namespace `SYNO.SDS.OTPManager.Application`.
 - UI desktop native ExtJS, không chuyển sang WebStation portal hoặc iframe SPA.
