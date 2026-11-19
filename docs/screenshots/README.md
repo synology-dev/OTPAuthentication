@@ -11,3 +11,7 @@ Suggested captures after install on a lab NAS:
 5. Shared with me tab
 
 Place PNG files here as `01-unlock.png` … `05-shared.png` before submission.
+
+Present:
+
+- `02-my-otps.png` — main list with Issuer/Account blurred for privacy. **Codes are still from a live vault**; for Package Center prefer a fresh capture with synthetic issuers/accounts/secrets only.

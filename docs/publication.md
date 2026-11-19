@@ -4,11 +4,11 @@
 - [ ] Apply via Synology developer form
 - [ ] Confirm package id `OTPAuthentication` with Synology (not reserved)
 - [ ] Choose project license text for public distribution (see `LICENSE`)
-- [ ] Build all required CPU SPKs; attach SHA256 sums
-- [ ] GitHub Release download URL ready (`synology-dev/OTPAuthentication`)
-- [ ] Description/changelog/screenshots (synthetic data only) — see `docs/screenshots/`
-- [ ] Operation manual + test scenarios for Synology QA (`docs/user-guide.md`, `docs/verification.md`)
-- [ ] Compatibility matrix limited to verified DSM/model/Python (`docs/compatibility.md`)
+- [x] Build all required CPU SPKs; attach SHA256 sums (`v1.0.0` release)
+- [x] GitHub Release download URL ready (`https://github.com/synology-dev/OTPAuthentication/releases/tag/v1.0.0`)
+- [ ] Description/changelog/screenshots (synthetic data only) — see `docs/screenshots/` (`02-my-otps.png` is privacy-blurred live vault; prefer synthetic re-capture before submit)
+- [x] Operation manual + test scenarios for Synology QA (`docs/user-guide.md`, `docs/verification.md`)
+- [ ] Compatibility matrix limited to verified DSM/model/Python (`docs/compatibility.md`) — aarch64/armv7 hardware still pending
 - [x] Privacy statement: data stays on device; no cloud sync (`docs/privacy.md`)
 - [ ] Appendix C lifecycle/security checks completed on hardware
 - [x] Support email / website / issue tracker URLs in INFO

@@ -8,6 +8,8 @@ Self-hosted TOTP authenticator vault for Synology DSM 7.x.
 - Plaintext (`otpauth://`) and encrypted backup/restore
 - Uses **system Python 3** (3.8+), ships `cryptography` wheels per CPU
 
+![OTP Authentication main window](docs/screenshots/02-my-otps.png)
+
 ## Build
 
 ```bash
