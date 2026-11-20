@@ -72,7 +72,7 @@ SYNO.SDS.OTPAuthentication.AppWindow = Ext.extend(SYNO.SDS.AppWindow, {
     var link = document.createElement("link");
     link.id = "otpauthentication-css";
     link.rel = "stylesheet";
-    link.href = "/webman/3rdparty/OTPAuthentication/style.css?v=20261119o";
+    link.href = "/webman/3rdparty/OTPAuthentication/style.css?v=20261120b";
     document.head.appendChild(link);
   },
 
@@ -490,12 +490,83 @@ SYNO.SDS.OTPAuthentication.AppWindow = Ext.extend(SYNO.SDS.AppWindow, {
     if (statusMsg) { this.setStatus(statusMsg); }
   },
 
+  _isVaultAuthError: function (code) {
+    return code === "locked" || code === "unauthorized" || code === "invalid_token";
+  },
+
+  /**
+   * Re-open vault using server pin.status only (ignore stale client pinConfigured).
+   * No PIN → open_nopin / Set up PIN. PIN set → Unlock dialog.
+   */
+  _recoverVaultSession: function () {
+    var me = this;
+    if (!me._isAppActive()) { return; }
+    if (me._recoveringVault) { return; }
+    me._recoveringVault = true;
+    me._openingUnlock = false;
+    me._closeAuthDialog();
+    me._setLockedUi(true);
+    me.setStatus("Checking vault status...");
+    me.api("pin.cgi", { method: "status" }, false).then(function (data) {
+      me._recoveringVault = false;
+      if (!me._isAppActive()) { return; }
+      if (data.package_stopped || data.enabled === false) {
+        me.setStatus("OTP Authentication is stopped. Start the package in Package Center.", true);
+        return;
+      }
+      if (data.username) {
+        me.state.username = data.username;
+        me._loadPrefs();
+      }
+      if (!data.pin_set) {
+        me._setPinConfigured(false);
+        if (data.pin_disabled) {
+          me.openNoPinSession();
+        } else {
+          me.openSetupPin();
+        }
+        return;
+      }
+      me._setPinConfigured(true);
+      me._showUnlockDialog();
+    }).catch(function (err) {
+      me._recoveringVault = false;
+      if (!me._isAppActive()) { return; }
+      if (err && err.code === "unauthorized") {
+        me.setStatus("DSM session expired — reload the page or sign in again.", true);
+        return;
+      }
+      me.setStatus((err && err.message) || "Unable to reach OTP Authentication API", true);
+    });
+  },
+
+  /** Prompt vault access after lock / missing token — always re-check server. */
+  _promptVaultAccess: function () {
+    this._recoverVaultSession();
+  },
+
+  /**
+   * API lost vault unlock and/or DSM session.
+   * - unauthorized → DSM session dead: soft status, never Unlock PIN.
+   * - locked / invalid_token → recover via pin.status (never trust client pinConfigured).
+   */
+  _handleAuthFailure: function (err) {
+    var code = (err && err.code) || "";
+    this.lockVault(false, false);
+    if (!this._isAppActive()) { return; }
+    if (code === "unauthorized") {
+      this.setStatus("DSM session expired — reload the page or sign in again.", true);
+      return;
+    }
+    this._recoverVaultSession();
+  },
+
   api: function (endpoint, payload, needUnlock) {
     var me = this;
     payload = payload || {};
     if (needUnlock) {
       if (!me.state.unlockToken) {
-        if (me._isAppActive()) { me.openUnlock(); }
+        if (me._isAppActive()) { me._promptVaultAccess(); }
         return Promise.reject({ message: "Vault is locked — unlock to continue", code: "locked" });
       }
       payload.unlock_token = me.state.unlockToken;
@@ -526,8 +597,8 @@ SYNO.SDS.OTPAuthentication.AppWindow = Ext.extend(SYNO.SDS.AppWindow, {
           }
           if (!body.success) {
             var err = (body.error || {});
-            if (err.code === "locked" || err.code === "unauthorized") {
-              me.lockVault(false);
+            if (me._isVaultAuthError(err.code)) {
+              me._handleAuthFailure(err);
             }
             reject({ message: err.message || err.code || "Request failed", code: err.code, extra: err });
             return;
@@ -537,8 +608,11 @@ SYNO.SDS.OTPAuthentication.AppWindow = Ext.extend(SYNO.SDS.AppWindow, {
         },
         failure: function (resp) {
           var parsed = me._parseApiResponseError(resp);
-          if (parsed.code === "locked" || parsed.code === "unauthorized") {
-            me.lockVault(false);
+          if (!parsed.code && resp && resp.status === 401) {
+            parsed.code = "unauthorized";
+          }
+          if (me._isVaultAuthError(parsed.code)) {
+            me._handleAuthFailure(parsed);
           }
           reject(parsed);
         }
@@ -626,6 +700,11 @@ SYNO.SDS.OTPAuthentication.AppWindow = Ext.extend(SYNO.SDS.AppWindow, {
   },
 
   openUnlock: function () {
+    // Toolbar / callers — always confirm PIN exists on server before Unlock dialog (V12b).
+    this._recoverVaultSession();
+  },
+
+  _showUnlockDialog: function () {
     var me = this;
     if (!me._isAppActive()) { return; }
     me._closeAuthDialog();
@@ -763,7 +842,11 @@ SYNO.SDS.OTPAuthentication.AppWindow = Ext.extend(SYNO.SDS.AppWindow, {
 
   openNoPinSession: function () {
     var me = this;
+    if (me._reopeningNoPin) { return; }
+    me._reopeningNoPin = true;
     me.api("pin.cgi", { method: "open_nopin" }, false).then(function (data) {
+      me._reopeningNoPin = false;
+      me._setPinConfigured(false);
       me.state.unlockToken = data.unlock_token;
       me.state.csrfToken = data.csrf_token;
       me._setLockedUi(false);
@@ -771,9 +854,23 @@ SYNO.SDS.OTPAuthentication.AppWindow = Ext.extend(SYNO.SDS.AppWindow, {
       me._startPolling();
       me.setStatus("Vault unlocked (no PIN).");
     }).catch(function (err) {
+      me._reopeningNoPin = false;
       me._setLockedUi(true);
+      // unauthorized already surfaced by _handleAuthFailure; do not open Setup/Unlock.
+      if (err && err.code === "unauthorized") { return; }
+      // Stale "no PIN" client state while server has a PIN.
+      if (err && err.code === "pin_exists") {
+        me._setPinConfigured(true);
+        me.openUnlock();
+        return;
+      }
+      // First-run / pin not disabled yet → Set up PIN (Cancel → disable + open_nopin).
+      if (err && err.code === "pin_required") {
+        me._setPinConfigured(false);
+        me.openSetupPin();
+        return;
+      }
       me.setStatus(err.message || "Unable to open vault", true);
-      me.openSetupPin();
     });
   },
 
@@ -894,7 +991,8 @@ SYNO.SDS.OTPAuthentication.AppWindow = Ext.extend(SYNO.SDS.AppWindow, {
       });
       me.store.commitChanges();
     }).catch(function (err) {
-      if (err.code === "locked") { return; }
+      // Auth loss handled in api() → _handleAuthFailure; avoid noisy status.
+      if (me._isVaultAuthError(err.code)) { return; }
       me.setStatus(err.message || "Code refresh failed", true);
     });
   },
@@ -1168,8 +1266,8 @@ SYNO.SDS.OTPAuthentication.AppWindow = Ext.extend(SYNO.SDS.AppWindow, {
   openImportDialog: function () {
     var me = this;
     if (!me.state.unlockToken) {
-      me.setStatus("Unlock the vault to import", true);
-      me.openUnlock();
+      me.setStatus(me.state.pinConfigured ? "Unlock the vault to import" : "Open the vault to import", true);
+      me._promptVaultAccess();
       return;
     }
     var win = new Ext.Window({
@@ -1337,8 +1435,8 @@ SYNO.SDS.OTPAuthentication.AppWindow = Ext.extend(SYNO.SDS.AppWindow, {
   _importConfirm: function (win) {
     var me = this;
     if (!me.state.unlockToken) {
-      me.setStatus("Unlock the vault to import", true);
-      me.openUnlock();
+      me.setStatus(me.state.pinConfigured ? "Unlock the vault to import" : "Open the vault to import", true);
+      me._promptVaultAccess();
       return;
     }
     me._clearDialogError(win);
