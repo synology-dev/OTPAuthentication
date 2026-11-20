@@ -13,7 +13,7 @@ On any **new requirement**, **UX/logic change**, or **bugfix that changes intend
 
 1. Read `docs/logic-spec.md`.
 2. Add/adjust the matching rows (stable IDs like `V5`, `I2`; short testable statements).
-3. Note decision date under "Lịch sử quyết định ngắn" when the product choice changes.
+3. Note decision date under "Short decision history" when the product choice changes.
 4. Do not leave chat-only requirements that contradict or omit the spec.
 
 ## When implementing / verifying

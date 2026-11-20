@@ -1,275 +1,275 @@
 ---
 name: Synology OTPManager Package
-overview: "OTP Manager: ExtJS native, Python hệ thống DSM tự phát hiện, dependencies riêng theo CPU/ABI, vault per-user, PIN, share, backup; GitHub Actions build và chuẩn bị publish Free."
+overview: "OTP Manager: native ExtJS, auto-detected DSM system Python, per-CPU/ABI dependencies, per-user vault, PIN, share, backup; GitHub Actions build and Free publish prep."
 isProject: true
 todos:
   - id: compatibility
-    content: "Kiểm chứng DSM integration, Python hệ thống DSM/crypto/toolchain và ma trận platform trước khi triển khai vault"
+    content: "Verify DSM integration, DSM system Python/crypto/toolchain, and platform matrix before implementing the vault"
     status: pending
   - id: repository
-    content: "Khởi tạo repo, giữ plan chính, cấu hình build reproducible và khóa dependencies"
+    content: "Initialize repo, keep the main plan, configure reproducible build and lock dependencies"
     status: pending
   - id: backend
-    content: "Backend: identity DSM, SQLite, encryption, PIN/session, ACL, TOTP và tests"
+    content: "Backend: DSM identity, SQLite, encryption, PIN/session, ACL, TOTP, and tests"
     status: pending
   - id: ui
-    content: "ExtJS native: unlock, CRUD, search, codes, share và backup/restore"
+    content: "Native ExtJS: unlock, CRUD, search, codes, share, and backup/restore"
     status: pending
   - id: lifecycle
-    content: "SPK lifecycle, migration, backup nhất quán, stop enforcement và uninstall an toàn"
+    content: "SPK lifecycle, migration, consistent backup, stop enforcement, and safe uninstall"
     status: pending
   - id: ci
-    content: "GitHub Actions: lint/tests, cross-build matrix, validation, checksums và release"
+    content: "GitHub Actions: lint/tests, cross-build matrix, validation, checksums, and release"
     status: pending
   - id: verification
-    content: "Kiểm thử DSM theo platform, hai user thường và user không được cấp quyền"
+    content: "DSM testing per platform, two regular users, and one user without app privilege"
     status: pending
   - id: publication
-    content: "Hoàn thiện tài liệu, license, privacy, screenshots và hồ sơ publish Free"
+    content: "Finish docs, license, privacy, screenshots, and Free publish package"
     status: pending
 ---
 
-# OTP Manager — kế hoạch triển khai và phát hành
+# OTP Manager — implementation and release plan
 
-## 1. Quyết định đã chốt
+## 1. Decisions locked in
 
-- Bản chính duy nhất: [.cursor/plans/synology_otp_package_3471a2a5.plan.md](synology_otp_package_3471a2a5.plan.md). Commit file này.
+- Single canonical copy: [.cursor/plans/synology_otp_package_3471a2a5.plan.md](synology_otp_package_3471a2a5.plan.md). Commit this file.
 - Repository: [synology-dev/OTPManager](https://github.com/synology-dev/OTPManager), SSH remote `git@github.com:synology-dev/OTPManager.git`.
-- Package ID `OTPManager`; tên hiển thị `OTP Manager`; namespace `SYNO.SDS.OTPManager.Application`.
-- UI desktop native ExtJS, không chuyển sang WebStation portal hoặc iframe SPA.
-- Backend dùng **Python 3 hệ thống DSM**, không hardcode minor version, không đóng gói interpreter và không yêu cầu cài package Python riêng. Không sửa site-packages hệ thống. Hỗ trợ rộng các phiên bản đã được kiểm chứng bằng capability probe và CI, không tuyên bố mọi Python đều tương thích.
-- Bỏ `noarch`. CI build cho nhóm x86_64, ARMv8/aarch64 và ARMv7; đóng gói theo platform/ABI tương thích.
-- Mục tiêu DSM 7.0/7.1 trở lên. Chỉ công bố các tổ hợp DSM/model/platform đã kiểm chứng; không khẳng định mọi NAS DSM 7.x đều hỗ trợ.
-- Vault riêng mỗi user DSM; chia sẻ từng entry với quyền xem mã. Publish **Free** trên Package Center sau khi đạt kiểm thử và được Synology chấp thuận.
+- Package ID `OTPManager`; display name `OTP Manager`; namespace `SYNO.SDS.OTPManager.Application`.
+- Native desktop ExtJS UI; do not switch to WebStation portal or iframe SPA.
+- Backend uses **DSM system Python 3**, no hard-coded minor version, no bundled interpreter, and no requirement to install a separate Python package. Do not modify system site-packages. Broad support for versions verified by capability probe and CI; do not claim every Python is compatible.
+- Drop `noarch`. CI builds for x86_64, ARMv8/aarch64, and ARMv7 groups; package by compatible platform/ABI.
+- Target DSM 7.0/7.1 and above. Only publish DSM/model/platform combinations that have been verified; do not claim every DSM 7.x NAS is supported.
+- Separate vault per DSM user; share individual entries with view-code permission. Publish **Free** on Package Center after tests pass and Synology approves.
 
-## 2. Ràng buộc Python hệ thống DSM và điều kiện phát hành
+## 2. DSM system Python constraints and release conditions
 
-Không coi phiên bản Python là cố định theo DSM. Synology quản lý interpreter; dự án quản lý dependencies riêng và kiểm thử lại sau DSM update. Phiên bản upstream EOL cần đánh giá bản vá/advisory của vendor, không tự suy ra an toàn hoặc không an toàn chỉ từ version.
+Do not treat the Python version as fixed per DSM. Synology manages the interpreter; the project manages its own dependencies and re-tests after DSM updates. Upstream EOL versions need vendor patch/advisory review; do not infer safe or unsafe from version alone.
 
-- Baseline mã nguồn là Python 3.8-compatible; CI mục tiêu Python 3.8–3.14. Đây là phạm vi test dự kiến, không khẳng định DSM cung cấp mọi phiên bản này. Không hỗ trợ Python 2. Runtime ngoài phạm vi đã kiểm chứng bị từ chối kèm thông báo rõ, không thử chạy mù.
-- Launcher dò interpreter tại các đường dẫn hệ thống tin cậy được xác minh trên DSM, không dùng PATH tùy ý. Probe version, architecture, sqlite3, ssl, hashlib, hmac, entropy và crypto backend. Ghi lại đường dẫn đã xác thực trong cấu hình riêng, revalidate mỗi start và sau DSM upgrade; không cố định tên `python3.9`.
-- Dependencies nằm trong thư mục riêng của package, không pip install trên NAS, không sửa Python hệ thống hoặc dùng site-packages từ user. Probe chạy cùng identity/environment thực tế của backend.
-- Native crypto phải khớp CPU, libc, Python ABI và OpenSSL linkage. Build dependency bundles theo nhóm Python ABI đã kiểm chứng; chỉ dùng abi3 khi thư viện thực sự hỗ trợ. Khóa manifest chọn bundle theo runtime và fail closed nếu không có bundle phù hợp. Không coi SPK theo CPU là đủ tương thích mọi minor Python.
-- Python 3.8-compatible syntax không đảm bảo thư viện crypto còn hỗ trợ 3.8. Không ép dùng dependency EOL chỉ để mở rộng matrix; target không đạt security gate là blocker phải báo người dùng.
-- Chọn Python `cryptography` cho AES-256-GCM. Đây là dependency mới phải được người dùng duyệt trước implementation/cài đặt; không tự cài trong giai đoạn plan.
-- Kiểm tra phiên bản `cryptography`, Rust build toolchain và OpenSSL tương thích Python hệ thống DSM, libc và CPU mục tiêu. Không pin tùy tiện bản cũ chỉ để build pass; cần rà advisory và nguồn hỗ trợ.
-- CI có bước rà vulnerability và license cho runtime cùng native dependencies. Không phát hành khi còn lỗ hổng nghiêm trọng áp dụng mà chưa xử lý hoặc chưa có kế hoạch hỗ trợ bản vá được chấp nhận.
-- Nếu không tìm được bộ runtime/crypto an toàn và build được, dừng trước implementation để báo blocker; không âm thầm đổi Python, giảm DSM support hoặc thay bằng crypto tự viết.
-- Không dùng `openssl enc` làm fallback AES-GCM, không viết AES, không copy implementation crypto không rõ nguồn.
+- Source baseline is Python 3.8-compatible; CI targets Python 3.8–3.14. This is the intended test range, not a claim that DSM ships every version. No Python 2 support. Runtimes outside the verified range are rejected with a clear message; do not blind-run.
+- Launcher probes interpreters at trusted system paths verified on DSM; do not use an arbitrary PATH. Probe version, architecture, sqlite3, ssl, hashlib, hmac, entropy, and crypto backend. Record the authenticated path in private config; revalidate on every start and after DSM upgrade; do not hard-code `python3.9`.
+- Dependencies live in a package-private directory; no pip install on the NAS, no system Python edits, no user site-packages. Probe runs under the backend's real identity/environment.
+- Native crypto must match CPU, libc, Python ABI, and OpenSSL linkage. Build dependency bundles per verified Python ABI group; use abi3 only when the library truly supports it. Lock the manifest to choose a bundle by runtime and fail closed if none matches. A CPU-based SPK is not enough for every Python minor.
+- Python 3.8-compatible syntax does not guarantee crypto libraries still support 3.8. Do not force EOL dependencies only to widen the matrix; a target that fails the security gate is a blocker that must be reported.
+- Choose Python `cryptography` for AES-256-GCM. This is a new dependency that must be approved by the user before implementation/install; do not auto-install during the plan phase.
+- Check `cryptography` version, Rust build toolchain, and OpenSSL compatibility with DSM system Python, libc, and target CPU. Do not pin an arbitrary old version just to make the build pass; review advisories and support sources.
+- CI includes vulnerability and license scans for runtime and native dependencies. Do not release while applicable critical vulnerabilities remain unaddressed or without an accepted patch-support plan.
+- If no safe, buildable runtime/crypto set is found, stop before implementation and report the blocker; do not silently change Python, shrink DSM support, or substitute hand-rolled crypto.
+- Do not use `openssl enc` as an AES-GCM fallback, do not write AES yourself, and do not copy crypto implementations of unclear provenance.
 
-## 3. Giai đoạn đầu: compatibility và DSM integration
+## 3. Early phase: compatibility and DSM integration
 
-Thực hiện trước khi xây dựng vault thật, chỉ dùng dữ liệu tổng hợp:
+Do this before building the real vault; use synthetic data only:
 
-1. Xác nhận version DSM, model, CPU/ABI và môi trường thử nghiệm qua quyền truy cập được cấp riêng; không đưa host/user/port/password NAS vào repo.
-2. Tạo SPK thử nghiệm tối thiểu có icon và AppWindow; kiểm tra mở app bằng user thường. Xác minh ExtJS/API thực tế trên từng DSM, không coi ví dụ cộng đồng là cam kết tương thích.
-3. Xác thực session DSM từ custom CGI bằng cơ chế được Synology tài liệu hóa; xác nhận helper, CGI environment, logout, account disabled và application privilege.
-4. Đo UID/GID thực tế của CGI và quyền đọc/ghi dữ liệu. `conf/privilege` không tự chứng minh CGI chạy dưới package user. Không giải quyết bằng root, setuid hoặc chmod world-readable; thiếu cơ chế quyền an toàn là blocker.
-5. Xác minh API/nguồn danh tính user và vòng đời xóa/tạo lại tài khoản. MVP hỗ trợ local DSM users; không tự mở rộng LDAP/domain.
-6. Probe Python có sẵn; cross-build dependency crypto cho CPU/Python ABI tương ứng, kiểm tra SQLite, SSL, entropy, AES-GCM round-trip và tamper rejection trên NAS. Không build hoặc cài interpreter.
-7. Ánh xạ nhóm CPU sang platform/toolchain chính thức, chốt minimum DSM và metadata `arch` theo kết quả.
+1. Confirm DSM version, model, CPU/ABI, and test environment via separately granted access; do not put NAS host/user/port/password in the repo.
+2. Build a minimal test SPK with icon and AppWindow; verify opening the app as a regular user. Verify real ExtJS/API on each DSM; do not treat community examples as a compatibility commitment.
+3. Authenticate the DSM session from custom CGI via Synology-documented mechanisms; confirm helper, CGI environment, logout, disabled account, and application privilege.
+4. Measure real CGI UID/GID and data read/write permissions. `conf/privilege` alone does not prove CGI runs as the package user. Do not “fix” with root, setuid, or world-readable chmod; missing a safe permission model is a blocker.
+5. Verify user identity API/source and delete/recreate account lifecycle. MVP supports local DSM users; do not unilaterally expand to LDAP/domain.
+6. Probe available Python; cross-build crypto dependencies for the matching CPU/Python ABI; verify SQLite, SSL, entropy, AES-GCM round-trip, and tamper rejection on the NAS. Do not build or install an interpreter.
+7. Map CPU groups to official platform/toolchain; lock minimum DSM and `arch` metadata from results.
 
-Tiêu chí qua bước này: UI/CGI hoạt động đúng quyền, identity tin cậy, runtime/crypto chạy offline và ít nhất một target có kết quả tích hợp thật. Các target khác phải qua cùng kiểm chứng trước khi release đầy đủ.
+Pass criteria: UI/CGI works with correct privileges, trusted identity, offline runtime/crypto, and at least one target with real integration evidence. Other targets must pass the same verification before a full release.
 
-## 4. Kiến trúc và cấu trúc repo
+## 4. Architecture and repo layout
 
-Frontend ExtJS gọi JSON CGI cùng origin tại `/webman/3rdparty/OTPManager/webapi/`. CGI xác thực DSM, kiểm tra app privilege, trạng thái package, unlock session và ACL trước khi truy cập dữ liệu.
+ExtJS frontend calls same-origin JSON CGI at `/webman/3rdparty/OTPManager/webapi/`. CGI authenticates DSM, checks app privilege, package state, unlock session, and ACL before data access.
 
-Các đường dẫn dự kiến:
+Expected paths:
 
-- `package/ui/OTPManager.js`: AppInstance/AppWindow, dialogs, countdown và client API.
-- `package/ui/config`: đăng ký app và privilege theo cơ chế xác minh ở compatibility spike.
-- `package/ui/webapi/`: entry points CGI mỏng; không chứa key/DB hoặc mã nguồn nhạy cảm có thể tải qua HTTP.
-- `package/backend/`: auth, sessions, storage, crypto, TOTP, URI parser, share và backup.
-- `package/deps/`: dependency bundles riêng theo CPU/Python ABI; manifest và launcher chọn bundle đã kiểm chứng. Không chứa Python interpreter.
-- `spk/INFO.in`, `spk/conf/privilege`, `spk/conf/resource`, `spk/scripts/`: metadata và lifecycle.
-- `build.sh`, `build/`: cross-build, dependency lock/checksum, platform mapping và SPK validator.
-- `tests/`: unit, authorization/integration và fixture tổng hợp.
-- `.github/workflows/ci.yml`, `.github/workflows/release.yml`: kiểm thử và build/release.
-- `docs/`: hướng dẫn người dùng, build, security model, compatibility và submission checklist.
+- `package/ui/OTPManager.js`: AppInstance/AppWindow, dialogs, countdown, and client API.
+- `package/ui/config`: app registration and privilege per the compatibility-spike verified mechanism.
+- `package/ui/webapi/`: thin CGI entry points; no keys/DB or sensitive source downloadable over HTTP.
+- `package/backend/`: auth, sessions, storage, crypto, TOTP, URI parser, share, and backup.
+- `package/deps/`: per-CPU/Python ABI dependency bundles; manifest and launcher select a verified bundle. No Python interpreter.
+- `spk/INFO.in`, `spk/conf/privilege`, `spk/conf/resource`, `spk/scripts/`: metadata and lifecycle.
+- `build.sh`, `build/`: cross-build, dependency lock/checksum, platform mapping, and SPK validator.
+- `tests/`: unit, authorization/integration, and synthetic fixtures.
+- `.github/workflows/ci.yml`, `.github/workflows/release.yml`: test and build/release.
+- `docs/`: user guide, build, security model, compatibility, and submission checklist.
 
-Dữ liệu nằm ngoài web root, trong persistent package data directory do DSM quản lý, truy cập qua `/var/packages/OTPManager/var` sau khi xác minh lifecycle. Directory mode 0700, DB/key mode 0600; chỉ identity backend được cấp quyền.
+Data lives outside the web root in the DSM-managed persistent package data directory, accessed via `/var/packages/OTPManager/var` after lifecycle verification. Directory mode 0700, DB/key mode 0600; only the backend identity may access.
 
-## 5. Mô hình bảo mật
+## 5. Security model
 
 ### At-rest encryption
 
-- Một package DEK 256-bit sinh bằng CSPRNG; mỗi entry mã hóa AES-256-GCM với nonce 96-bit mới khi ghi và tag 128-bit.
-- AAD gắn schema version, entry ID và owner ID; không cho phép tráo ciphertext giữa entry/owner.
-- PIN là khóa truy cập app, **không phải khóa giải mã DEK**. Per-user là phân quyền ứng dụng, không phải cách ly mật mã khỏi root.
-- Bên có cả DB và DEK có thể giải mã. Không quảng bá zero-knowledge hoặc bảo vệ khỏi admin NAS.
-- Không gửi secret cho người nhận share; owner chỉ nhận secret qua thao tác reveal/export có xác nhận PIN lại.
-- Mất key khi DB đã tồn tại: fail closed, tuyệt đối không sinh key mới rồi ghi đè dữ liệu.
+- One 256-bit package DEK from a CSPRNG; each entry encrypted with AES-256-GCM using a fresh 96-bit nonce on write and a 128-bit tag.
+- AAD binds schema version, entry ID, and owner ID; do not allow ciphertext swaps across entry/owner.
+- PIN is an app access lock, **not the DEK decryption key**. Per-user is application authorization, not cryptographic isolation from root.
+- Anyone with both DB and DEK can decrypt. Do not advertise zero-knowledge or protection from the NAS admin.
+- Do not send secrets to share recipients; the owner only receives a secret via reveal/export with PIN re-confirm.
+- Missing key while DB already exists: fail closed; never mint a new key and overwrite data.
 
-### PIN và phiên
+### PIN and sessions
 
-- PIN số tối thiểu 6, tối đa 12 chữ số; UI khuyến nghị PIN dài. Lưu salted PBKDF2-HMAC-SHA256 với tham số versioned; benchmark trên NAS yếu nhất và rà hướng dẫn hiện hành trước khóa tham số.
-- Hạn chế thử sai bền vững theo user, backoff tăng dần và cooldown sau 5 lần sai; thao tác cập nhật bộ đếm phải atomic.
-- Token random 32 bytes, chỉ lưu hash trong DB; gắn user, instance app và session DSM. Không lưu token vào localStorage hoặc URL.
-- Idle timeout 15 phút, thời gian sống tối đa 8 giờ. Chỉ tương tác người dùng mới gia hạn; polling không gia hạn.
-- Lock, đổi PIN, stop package thu hồi phiên. Đóng cửa sổ thu hồi best-effort; thời hạn server vẫn bắt buộc. Session DSM hết hạn/logout/disable phải bị từ chối ở request kế tiếp.
-- Đổi PIN cần PIN hiện tại. MVP không có bypass/reset PIN tự động; tài liệu phải nói rõ trước setup. Backup đã export có thể nhập vào vault mới hợp lệ bằng mật khẩu backup.
+- Numeric PIN minimum 6, maximum 12 digits; UI recommends a longer PIN. Store salted PBKDF2-HMAC-SHA256 with versioned parameters; benchmark on the weakest NAS and review current guidance before locking parameters.
+- Persist failed-attempt limits per user with escalating backoff and cooldown after 5 failures; counter updates must be atomic.
+- 32-byte random token; store only the hash in the DB; bind user, app instance, and DSM session. Do not put the token in localStorage or the URL.
+- Idle timeout 15 minutes, absolute lifetime 8 hours. Only user interaction extends the session; polling does not.
+- Lock, change PIN, and package stop revoke sessions. Window close revokes best-effort; server expiry remains mandatory. Expired/logged-out/disabled DSM sessions must be rejected on the next request.
+- Changing PIN requires the current PIN. MVP has no automatic PIN bypass/reset; docs must say so before setup. An exported backup can be imported into a new valid vault with the backup password.
 
 ### API hardening
 
-- Mọi API, kể cả list/search/metadata, cần unlock trừ status/setup/unlock đã xác thực DSM.
-- Kiểm tra quyền ở backend cho từng entry, không tin username/owner do client gửi.
-- Thay đổi trạng thái chỉ qua POST, CSRF token gắn session, kiểm tra Origin với cấu hình origin tin cậy; không coi custom header đơn lẻ là đủ.
-- HTTPS là điều kiện vận hành; responses nhạy cảm dùng `Cache-Control: no-store`; escape metadata trong UI, SQL parameterized.
-- Giới hạn request/upload/batch, kiểm tra schema/type; không log secret, OTP, PIN, password backup, token, cookie hoặc DEK.
+- Every API, including list/search/metadata, requires unlock except status/setup/unlock after DSM authentication.
+- Enforce permissions on the backend per entry; do not trust client-supplied username/owner.
+- State changes only via POST; CSRF token bound to session; Origin checked against a trusted-origin config; a custom header alone is not enough.
+- HTTPS is an operational requirement; sensitive responses use `Cache-Control: no-store`; escape metadata in the UI; parameterized SQL.
+- Limit request/upload/batch size; validate schema/type; never log secrets, OTP, PIN, backup password, token, cookie, or DEK.
 
-## 6. Dữ liệu, TOTP và share
+## 6. Data, TOTP, and share
 
-SQLite có schema version, foreign keys, transaction và busy timeout. Các bảng:
+SQLite with schema version, foreign keys, transactions, and busy timeout. Tables:
 
-- `users`: internal ID, DSM identity binding, username hiển thị, PIN hash/salt/parameters, trạng thái.
-- `entries`: ID, owner ID, issuer, account, label, algorithm, digits, period, ciphertext/nonce/tag và timestamps.
-- `shares`: entry ID, grantee ID, timestamps; unique entry/grantee. MVP chỉ có quyền view.
-- `sessions`: token hash, owner/session binding, idle/absolute expiry và revocation.
-- `pin_attempts`: counter/cooldown bền vững theo user.
-- `schema_migrations`, package enabled state và security event metadata không chứa secrets.
+- `users`: internal ID, DSM identity binding, display username, PIN hash/salt/parameters, status.
+- `entries`: ID, owner ID, issuer, account, label, algorithm, digits, period, ciphertext/nonce/tag, and timestamps.
+- `shares`: entry ID, grantee ID, timestamps; unique entry/grantee. MVP is view-only.
+- `sessions`: token hash, owner/session binding, idle/absolute expiry, and revocation.
+- `pin_attempts`: durable per-user counter/cooldown.
+- `schema_migrations`, package enabled state, and security event metadata contain no secrets.
 
-Identity DSM phải có cơ chế phát hiện account bị xóa/tạo lại; username hoặc UID có thể tái sử dụng không đủ để tự trao lại vault. Tình huống không chứng minh được continuity phải fail closed và yêu cầu xử lý rõ ràng, không tự remap.
+DSM identity must detect deleted/recreated accounts; username or UID reuse alone must not reattach a vault. Cases without proven continuity fail closed and need explicit handling, not auto-remap.
 
-TOTP hỗ trợ SHA1/SHA256/SHA512, 6 hoặc 8 digits, period nguyên từ 15 đến 300 giây; mặc định SHA1/6/30. URI ngoài phạm vi bị báo lỗi, không âm thầm sửa tham số. HOTP ngoài MVP.
+TOTP supports SHA1/SHA256/SHA512, 6 or 8 digits, integer period 15–300 seconds; defaults SHA1/6/30. Out-of-range URIs error; do not silently rewrite parameters. HOTP is out of MVP.
 
-- Owner: CRUD, xem mã, share/revoke, reveal/export sau PIN lại.
-- Người nhận: xem metadata và mã hiện tại; không sửa/xóa/share/reveal/export secret.
-- Thu hồi ACL kiểm tra mỗi request. Mã đã hiển thị không thể thu hồi ngược và còn giá trị tới hết chu kỳ.
-- Chỉ share với local DSM user đã khởi tạo OTP Manager; nhập username chính xác và kiểm tra server, không lộ danh sách toàn bộ tài khoản.
-- Search không phân biệt hoa/thường trên issuer/account/label, chỉ trong tập entry được phép; phân trang và giới hạn batch.
+- Owner: CRUD, view codes, share/revoke, reveal/export after PIN re-confirm.
+- Recipient: view metadata and current code; no edit/delete/share/reveal/export secret.
+- ACL revoke is checked every request. Codes already shown cannot be revoked retroactively and remain valid until the period ends.
+- Share only with a local DSM user who has initialized OTP Manager; exact username entry and server check; do not expose the full account list.
+- Case-insensitive search on issuer/account/label within the allowed entry set only; pagination and batch limits.
 
 ## 7. Backup / restore
 
 ### Plaintext
 
-Mỗi dòng một `otpauth://totp/` URI; percent-encode issuer/account đúng quy tắc, xuất `secret`, `issuer` và algorithm/digits/period không mặc định. Không ghi secrets thật trong test hoặc tài liệu.
+One `otpauth://totp/` URI per line; percent-encode issuer/account correctly; export `secret`, `issuer`, and non-default algorithm/digits/period. Do not put real secrets in tests or docs.
 
-Chỉ export entries sở hữu. Cảnh báo rõ file chứa khóa 2FA; yêu cầu nhập lại PIN, tải trực tiếp, không lưu plaintext tạm trên NAS.
+Export owned entries only. Clearly warn that the file contains 2FA keys; require PIN re-entry; download directly; do not store temporary plaintext on the NAS.
 
 ### Encrypted
 
-- File JSON có format version, cipher, KDF identifier/parameters, salt, nonce và ciphertext/tag base64.
-- AES-256-GCM; key dẫn xuất từ password backup độc lập PIN bằng PBKDF2-HMAC-SHA256; tham số được khóa sau benchmark/security review ở compatibility gate.
-- Salt tối thiểu 16 bytes, nonce 12 bytes, tag 16 bytes; authenticate header bằng canonical AAD.
-- Payload JSON versioned chứa metadata và TOTP parameters; không gồm PIN, sessions, DEK hay ACL share.
-- V1 giới hạn file 10 MiB, 10.000 entries; KDF parameters phải nằm trong profile cho phép để chống DoS. Sai password, tag lỗi hoặc format không hỗ trợ: từ chối toàn bộ.
+- JSON file with format version, cipher, KDF identifier/parameters, salt, nonce, and base64 ciphertext/tag.
+- AES-256-GCM; key derived from a backup password independent of the PIN via PBKDF2-HMAC-SHA256; parameters locked after benchmark/security review at the compatibility gate.
+- Salt at least 16 bytes, nonce 12 bytes, tag 16 bytes; authenticate the header with canonical AAD.
+- Versioned JSON payload holds metadata and TOTP parameters; no PIN, sessions, DEK, or share ACLs.
+- V1 limits: 10 MiB file, 10,000 entries; KDF parameters must stay within allowed profiles to resist DoS. Wrong password, bad tag, or unsupported format: reject entirely.
 
 ### Import
 
-Preview và validate toàn bộ trước commit transaction. Mặc định merge, bỏ duplicate chính xác sau chuẩn hóa; cùng issuer/account nhưng khác secret giữ thành entry riêng có cảnh báo. Không replace trong MVP. Lỗi bất kỳ không để lại import một phần; thông báo chỉ số dòng/entry, không echo secret.
+Preview and validate everything before committing the transaction. Default merge; skip exact duplicates after normalization; same issuer/account with different secret becomes a separate entry with a warning. No replace in MVP. Any error must not leave a partial import; messages cite line/entry numbers, never echo secrets.
 
-Backup cá nhân phục hồi vào owner đang đăng nhập, không tự khôi phục share. Backup phục hồi toàn package là quy trình quản trị riêng gồm DB và DEK nhất quán.
+Personal backup restores into the logged-in owner; do not auto-restore shares. Full-package restore is a separate admin process with a consistent DB+DEK set.
 
-## 8. UI và API
+## 8. UI and API
 
-UI native gồm UnlockDialog, danh sách Owned/Shared, search, CRUD, share/revoke, backup/restore và Lock. Không dùng `Ext.create` của ExtJS mới trong code target ExtJS 3.
+Native UI includes UnlockDialog, Owned/Shared lists, search, CRUD, share/revoke, backup/restore, and Lock. Do not use newer ExtJS `Ext.create` in ExtJS 3 target code.
 
-API nhóm chức năng:
+API groups:
 
 - `pin`: status/setup/unlock/change/lock.
 - `entries`: list/create/update/delete/reveal.
-- `codes`: batch mã, server time và thời điểm hết hạn.
+- `codes`: batch codes, server time, and expiry.
 - `shares`: list/add/remove/resolve-recipient.
-- `backup`: export/import plain và encrypted, preview/confirm.
+- `backup`: export/import plain and encrypted, preview/confirm.
 
-Countdown chạy client dựa trên giờ server. Fetch theo ranh giới chu kỳ, không gọi CGI mỗi giây. Dừng polling khi ẩn/khóa; khi quay lại kiểm tra phiên trước hiển thị. Dọn mã/token khỏi UI khi khóa; copy clipboard cần thao tác người dùng và không hứa xóa clipboard tự động.
+Client countdown uses server time. Fetch on period boundaries; do not call CGI every second. Stop polling when hidden/locked; on return, check session before display. Clear codes/tokens from the UI on lock; clipboard copy requires a user gesture and does not promise automatic clipboard clear.
 
-### 8.1. Điều hướng và danh sách
+### 8.1. Navigation and lists
 
-- **My OTPs**: mặc định sau unlock, chỉ entries sở hữu. Grid: issuer, account, label, code, countdown, trạng thái share và actions.
-- **Shared with me**: entries được chia sẻ, thêm cột owner; chỉ xem/copy mã.
-- **Settings**: Change PIN, idle timeout 15 phút và absolute timeout 8 giờ ở dạng chỉ đọc trong MVP; About hiển thị version app, DSM/Python đã phát hiện, không hiển thị đường dẫn/key nhạy cảm.
-- **Lock** luôn có trên toolbar khi mở khóa. Không hiển thị entry, metadata hoặc search results phía sau màn hình PIN.
-- Search trong tab hiện tại trên issuer/account/label, debounce 300 ms, reset pagination khi đổi query; bỏ response cũ về trễ. Có Clear search và pagination.
-- Chọn nhiều dòng chỉ dùng cho export trên My OTPs; MVP không bulk delete/share.
+- **My OTPs**: default after unlock; owned entries only. Grid: issuer, account, label, code, countdown, share status, and actions.
+- **Shared with me**: shared entries, plus owner column; view/copy code only.
+- **Settings**: Change PIN; idle timeout 15 minutes and absolute timeout 8 hours read-only in MVP; About shows app version and detected DSM/Python, not sensitive paths/keys.
+- **Lock** always on the toolbar when unlocked. Do not show entries, metadata, or search results behind the PIN screen.
+- Search within the current tab on issuer/account/label, 300 ms debounce, reset pagination on query change; drop stale late responses. Clear search and pagination available.
+- Multi-row select is for export on My OTPs only; MVP has no bulk delete/share.
 
-### 8.2. Toolbar và action contract
+### 8.2. Toolbar and action contract
 
-Các tên action dưới đây là contract nội bộ dự kiến, không phải API có sẵn của DSM. Mọi thao tác đều kiểm tra session/ACL phía server tại thời điểm thực hiện.
+Action names below are the expected internal contract, not a built-in DSM API. Every action checks session/ACL on the server at execution time.
 
-- **Add OTP** — My OTPs; mở form, chọn Manual hoặc Paste URI. Preview URI không lưu dữ liệu; Save gọi `entries.create`, thành công thêm entry và đóng dialog, lỗi giữ form không chứa lỗi echo secret.
-- **Import** — My OTPs; file plaintext/encrypted, password cho encrypted. Preview gọi `backup.preview`; Confirm Import chỉ bật khi toàn bộ input hợp lệ, gọi `backup.confirm`, trả số added/skipped và refresh danh sách.
-- **Export** — My OTPs; phạm vi Selected hoặc All owned, mặc định Selected khi có lựa chọn, ngược lại All owned. Không hiểu All là trang hiện tại hoặc kết quả search. Mặc định encrypted, yêu cầu password và confirm password. Plaintext có cảnh báo riêng và checkbox xác nhận. Cả hai yêu cầu PIN lại; server reauthorize toàn bộ tập entry trước export, không xuất một phần âm thầm khi quyền/dữ liệu đã thay đổi.
-- **Lock** — gọi `pin.lock`, đồng thời dọn UI ngay. Nếu mất mạng vẫn khóa local, không báo đã revoke server thành công; token server hết hạn theo policy. Không chờ network mới che secrets.
-- **Refresh** — tải lại danh sách/quyền và mã của tab hiện tại, không tự unlock hoặc kéo dài phiên chỉ vì refresh nền.
+- **Add OTP** — My OTPs; open form, Manual or Paste URI. URI preview does not persist; Save calls `entries.create`; success adds the entry and closes the dialog; errors keep the form without echoing secrets.
+- **Import** — My OTPs; plaintext/encrypted file, password for encrypted. Preview calls `backup.preview`; Confirm Import enables only when all input is valid, calls `backup.confirm`, returns added/skipped counts, and refreshes the list.
+- **Export** — My OTPs; scope Selected or All owned; default Selected when a selection exists, otherwise All owned. All does not mean current page or search results. Default encrypted; require password and confirm password. Plaintext has a separate warning and confirm checkbox. Both require PIN re-entry; server reauthorizes the full entry set before export and must not silently export a partial set when rights/data changed.
+- **Lock** — call `pin.lock` and clear the UI immediately. If the network is down, still lock locally; do not claim server revoke succeeded; server token expires per policy. Do not wait on the network before hiding secrets.
+- **Refresh** — reload the current tab’s list/permissions and codes; do not auto-unlock or extend the session merely because of background refresh.
 
-### 8.3. Actions từng entry
+### 8.3. Per-entry actions
 
-- **Copy code** — owner hoặc grantee view; chỉ copy mã còn hiệu lực, phát sinh từ thao tác người dùng. Nếu mã sắp hết hạn cần lấy mã mới trước copy. Clipboard bị trình duyệt từ chối thì thông báo và cho chọn mã thủ công; không báo thành công giả.
-- **Edit** — owner; sửa issuer/account/label và TOTP parameters. Secret hiện hữu không preload về form; để trống trường replacement nghĩa là giữ nguyên. Thay secret cần PIN lại và cảnh báo thay đổi tác động tới người đang được share. Save gọi `entries.update`; chỉ cập nhật grid sau server xác nhận.
-- **Share** — owner; nhập đúng username, `shares.resolve-recipient` chỉ trả thông tin tối thiểu của local user đã khởi tạo app. Hiển thị người nhận và quyền View codes để xác nhận rồi `shares.add`. Không autocomplete danh sách mọi DSM user; không share bản thân hoặc tạo share trùng.
-- **Revoke** — owner trong Share dialog; hiển thị người nhận, xác nhận rồi `shares.remove`. Cảnh báo mã đã cấp còn hiệu lực tới hết chu kỳ. Chỉ bỏ share khỏi danh sách sau response thành công.
-- **Reveal secret** — owner; PIN lại qua server rồi `entries.reveal`. Hiển thị có chủ đích, tự che sau 30 giây và khi dialog đóng/app khóa. Không preload, không cho grantee dùng endpoint này.
-- **Delete** — owner; dialog nêu issuer/account và số người nhận share bị ảnh hưởng. Confirm gọi `entries.delete`, cascade shares trong transaction; không xóa optimistic trước server xác nhận. MVP không có undo/trash.
-- Grantee không thấy Edit/Share/Revoke/Reveal/Delete/Export entry; gọi API trực tiếp vẫn phải bị từ chối.
+- **Copy code** — owner or view grantee; copy only a still-valid code from a user gesture. If the code is about to expire, fetch a new one before copy. If the browser denies clipboard, notify and allow manual selection; never fake success.
+- **Edit** — owner; edit issuer/account/label and TOTP parameters. Existing secret is not preloaded; leaving the replacement field empty keeps it. Changing the secret requires PIN re-entry and a warning that current share recipients are affected. Save calls `entries.update`; update the grid only after server confirmation.
+- **Share** — owner; exact username; `shares.resolve-recipient` returns minimal info for a local user who has initialized the app. Show recipient and View codes permission for confirm, then `shares.add`. No autocomplete of every DSM user; no self-share or duplicate share.
+- **Revoke** — owner in Share dialog; show recipient, confirm, then `shares.remove`. Warn that already-issued codes remain valid until the period ends. Remove from the list only after a successful response.
+- **Reveal secret** — owner; PIN re-entry via server then `entries.reveal`. Intentional display; auto-hide after 30 seconds and on dialog close/app lock. No preload; grantees cannot use this endpoint.
+- **Delete** — owner; dialog states issuer/account and how many share recipients are affected. Confirm calls `entries.delete`, cascades shares in a transaction; no optimistic delete before server confirmation. MVP has no undo/trash.
+- Grantees do not see Edit/Share/Revoke/Reveal/Delete/Export entry; direct API calls must still be denied.
 
-### 8.4. Dialog và dữ liệu nhập
+### 8.4. Dialogs and input
 
-- **Setup PIN**: PIN/confirm PIN, policy và cảnh báo không có reset tự động; chỉ tạo sau server xác minh chưa có PIN. Không cho setup ghi đè PIN hiện tại.
-- **Unlock**: PIN, Unlock; Enter submit, hiển thị cooldown từ server, disable submit trong request/cooldown. Không lưu PIN ở browser storage.
-- **Change PIN**: current/new/confirm; thành công revoke các unlock sessions và đưa app về Unlock.
-- **Entry form**: issuer, account, label, secret Base32; Advanced gồm SHA1/SHA256/SHA512, digits 6/8, period 15–300 giây. Mặc định SHA1/6/30. Validate client để hỗ trợ UX, server là nguồn quyết định cuối cùng.
-- **Import preview**: hiển thị issuer/account và trạng thái new/duplicate/error, không hiển thị secret. Token preview ngắn hạn gắn session/user/digest input; dữ liệu nhạy cảm chỉ giữ trong memory giới hạn hoặc encrypted staging riêng, không plaintext file. Confirm chỉ dùng đúng input đã preview, validate lại trong transaction; Cancel/lock/expiry dọn staging. Giới hạn upload/KDF/count áp dụng cả preview.
-- **Export**: nút Export chỉ bật khi phạm vi hợp lệ, PIN và password xác nhận hợp lệ. Password/PIN không đưa vào query string/log hoặc lưu browser storage. Dọn input nhạy cảm và thu hồi Blob URL sau download; không cam kết xóa bản tải về hay clipboard.
-- Các dialog có Cancel; đóng form đang sửa yêu cầu xác nhận bỏ thay đổi. Lock/session expiry luôn ưu tiên dọn dữ liệu, không bị chặn bởi dialog unsaved changes.
+- **Setup PIN**: PIN/confirm PIN, policy, and warning that there is no automatic reset; create only after the server verifies no PIN exists. Setup must not overwrite an existing PIN.
+- **Unlock**: PIN, Unlock; Enter submits; show server cooldown; disable submit during request/cooldown. Do not store PIN in browser storage.
+- **Change PIN**: current/new/confirm; on success revoke unlock sessions and return the app to Unlock.
+- **Entry form**: issuer, account, label, Base32 secret; Advanced includes SHA1/SHA256/SHA512, digits 6/8, period 15–300 seconds. Defaults SHA1/6/30. Client validation for UX; server is the final authority.
+- **Import preview**: show issuer/account and new/duplicate/error status, never the secret. Short-lived preview token bound to session/user/input digest; sensitive data only in limited memory or separate encrypted staging, not a plaintext file. Confirm must use exactly the previewed input and re-validate in a transaction; Cancel/lock/expiry clears staging. Upload/KDF/count limits apply to preview too.
+- **Export**: Export button enables only when scope, PIN, and password confirmation are valid. Do not put password/PIN in query string/logs or browser storage. Clear sensitive inputs and revoke Blob URLs after download; do not promise to erase the downloaded file or clipboard.
+- Dialogs have Cancel; closing a dirty form asks to discard changes. Lock/session expiry always clears data first and is not blocked by unsaved-change dialogs.
 
-### 8.5. Trạng thái, lỗi và accessibility
+### 8.5. State, errors, and accessibility
 
-- Empty My OTPs có Add/Import; empty Shared with me giải thích chưa có entry được share; no search results có Clear search.
-- Loading/saving hiển thị tiến trình và disable nút gửi lặp. Mutation không tự retry mù khi timeout; reconcile trạng thái server trước khi cho gửi lại, dùng request ID/idempotency cho create/import.
-- Session hết hạn: dọn grid/dialog nhạy cảm và về Unlock; session DSM hết hạn yêu cầu đăng nhập lại DSM, không thu password DSM trong app.
-- Mất kết nối: báo trạng thái offline, dừng coi mã cũ là hợp lệ khi hết hạn, disable Copy khi không xác nhận được mã còn hiệu lực. Không cache để dùng offline ở browser.
-- Share bị thu hồi/entry bị xóa: dọn mã/entry ở lần xác minh kế tiếp; lỗi stale update không ghi đè âm thầm. Dùng revision/updated version để phát hiện concurrent edits và yêu cầu reload.
-- Error message thân thiện, không raw stack trace/secret; thông báo kết quả bằng text, không chỉ màu. Label rõ cho input/nút icon, keyboard navigation, focus đầu dialog và trả focus khi đóng.
+- Empty My OTPs offers Add/Import; empty Shared with me explains no shared entries yet; no search results offers Clear search.
+- Loading/saving shows progress and disables repeat submit. Mutations do not blind-retry on timeout; reconcile server state before resubmit; use request ID/idempotency for create/import.
+- Session expired: clear sensitive grid/dialogs and return to Unlock; expired DSM session requires DSM login again; do not collect the DSM password in-app.
+- Offline: show offline status; stop treating old codes as valid past expiry; disable Copy when validity cannot be confirmed. No offline browser cache.
+- Share revoked/entry deleted: clear code/entry on the next verification; stale update errors must not silently overwrite. Use revision/updated version to detect concurrent edits and require reload.
+- Friendly error messages, no raw stack traces/secrets; result feedback is textual, not color-only. Clear labels for inputs/icon buttons, keyboard navigation, initial dialog focus, and restore focus on close.
 
-### 8.6. Acceptance criteria UI
+### 8.6. UI acceptance criteria
 
-QA phải đi hết mỗi action ở trạng thái owner/grantee/locked/expired, kiểm tra nút ẩn/disable và API denial tương ứng. Bắt buộc test double-submit, response đảo thứ tự khi search, clipboard failure, network timeout, close/reopen, import preview khác confirm, khóa khi reveal/export và quyền bị thu hồi giữa thao tác.
+QA must walk every action as owner/grantee/locked/expired, checking hidden/disabled buttons and matching API denial. Required tests: double-submit, out-of-order search responses, clipboard failure, network timeout, close/reopen, import preview differing from confirm, lock during reveal/export, and rights revoked mid-action.
 
-## 9. Packaging và lifecycle
+## 9. Packaging and lifecycle
 
-- Package chạy non-root; tài nguyên đặc quyền qua resource worker được hỗ trợ. Không sửa cấu hình DSM toàn cục để ép CGI chạy root.
-- INFO generated từ template: package/displayname/version/arch/os_min_ver/maintainer/support_url nhất quán; không dùng metadata deprecated.
-- Dependencies đóng gói offline; không đóng gói interpreter, không pip install/download/compiler trên NAS. RPATH/shared libraries riêng được cô lập khỏi hệ thống.
-- Install tạo data/key/schema với quyền tối thiểu; setup vault yêu cầu DSM identity hợp lệ.
-- Start chạy self-test runtime/key/schema rồi enable API; stop disable API và revoke sessions. Không báo running chỉ vì directory tồn tại.
-- Upgrade quiesce writes, dùng SQLite backup API hoặc shutdown nhất quán; DB/DEK backup cùng bộ, migrations transaction và có rollback được test.
-- Persistent data dùng cơ chế DSM đã xác minh; không copy raw DB đang ghi hoặc giả định var luôn sống qua uninstall.
-- Uninstall cảnh báo export trước, xác nhận xóa dữ liệu rõ ràng và cleanup package files/processes; không tự thực hiện thử nghiệm phá dữ liệu trên NAS thật.
+- Package runs non-root; privileged resources via supported resource workers. Do not rewrite global DSM config to force CGI as root.
+- INFO generated from a template: package/displayname/version/arch/os_min_ver/maintainer/support_url consistent; no deprecated metadata.
+- Dependencies packaged offline; no interpreter packaging, no pip install/download/compiler on the NAS. Private RPATH/shared libraries isolated from the system.
+- Install creates data/key/schema with least privilege; vault setup requires a valid DSM identity.
+- Start runs runtime/key/schema self-test then enables the API; stop disables the API and revokes sessions. Do not report running merely because a directory exists.
+- Upgrade quiesces writes; use SQLite backup API or consistent shutdown; DB/DEK backed up together; migrations are transactional with tested rollback.
+- Persistent data uses the verified DSM mechanism; do not copy a live DB mid-write or assume var always survives uninstall.
+- Uninstall warns to export first, confirms data deletion clearly, and cleans package files/processes; do not run destructive data experiments on a real NAS unprompted.
 
-## 10. CI và phát hành
+## 10. CI and release
 
-Matrix mục tiêu: x86_64, ARMv8/aarch64, ARMv7. Mapping build target chính thức được khóa ở compatibility gate; ARMv7 phải tách platform khi loader/libc/ABI khác. Không bao gồm x86 32-bit, ARMv5, PowerPC trong đợt đầu.
+Target matrix: x86_64, ARMv8/aarch64, ARMv7. Official build-target mapping is locked at the compatibility gate; ARMv7 must split platforms when loader/libc/ABI differ. First wave excludes 32-bit x86, ARMv5, and PowerPC.
 
-- Pin source revisions/checksums/toolchain và actions theo SHA; không dùng binary Ubuntu host làm runtime NAS.
-- `ci.yml`: PR/push main và manual dispatch; lint Python/JS/shell, unit/integration tests, matrix test Python 3.8–3.14 và cross-build dependency theo CPU/Python ABI, ELF/loader/library checks, SPK metadata/permission/layout checks.
-- Cache theo target/toolchain/dependency hashes; build release phải có thể tái tạo từ commit và lock manifest.
-- Artifact: `OTPManager-<version>-<target>.spk`, SHA256SUMS, compatibility manifest và license/dependency inventory.
-- `release.yml`: tag dạng `v1.0.0-001`, phải khớp INFO và build number tăng dần. Chạy lại toàn bộ gate; chỉ tạo draft GitHub Release khi tất cả target bắt buộc pass.
-- Mặc định `contents: read`; write chỉ ở job tạo release. Không dùng `pull_request_target` để chạy code PR, không đưa NAS credentials vào CI, không auto-deploy.
-- Draft chỉ được publish sau QA DSM đủ matrix. QEMU bổ sung smoke test CPU, không thay thế NAS/DSM tests.
-- Init repo kiểm tra remote trước khi tạo branch, không force-push. Track plan chính, ignore artifacts/runtime data/secrets; không ignore toàn bộ `.cursor/` làm mất plan.
+- Pin source revisions/checksums/toolchain and actions by SHA; do not use Ubuntu host binaries as NAS runtime.
+- `ci.yml`: PR/push main and manual dispatch; lint Python/JS/shell, unit/integration tests, Python 3.8–3.14 matrix and cross-build dependencies per CPU/Python ABI, ELF/loader/library checks, SPK metadata/permission/layout checks.
+- Cache by target/toolchain/dependency hashes; release builds must be reproducible from commit and lock manifest.
+- Artifacts: `OTPManager-<version>-<target>.spk`, SHA256SUMS, compatibility manifest, and license/dependency inventory.
+- `release.yml`: tags like `v1.0.0-001`, must match INFO and increasing build numbers. Re-run the full gate; create a draft GitHub Release only when all required targets pass.
+- Default `contents: read`; write only on the release-creating job. Do not use `pull_request_target` to run PR code; do not put NAS credentials in CI; no auto-deploy.
+- Draft is published only after DSM QA across the matrix. QEMU adds CPU smoke tests; it does not replace NAS/DSM tests.
+- Repo init checks the remote before creating branches; no force-push. Track the main plan; ignore artifacts/runtime data/secrets; do not ignore all of `.cursor/` and lose the plan.
 
-## 11. Kiểm thử bắt buộc
+## 11. Mandatory testing
 
-- RFC 6238 vectors cho cả ba algorithms; boundary time, period, digits, parser/serializer Unicode và URI round-trip.
-- AES-GCM tamper/wrong-key/AAD rejection, nonce handling, KDF limits và backup round-trip.
-- Hai user thường và một user không được cấp quyền: isolation, IDOR, share/revoke, secret/export denial, account recreation và disabled account.
-- CSRF, XSS metadata, expired DSM session, PIN lockout/restart, polling không gia hạn idle, close/reopen và stop enforcement.
-- Import duplicate/error rollback, concurrent writes, SQLite busy, disk full, migration failure, missing DEK và restore sau upgrade.
-- Lifecycle install/start/stop/restart/upgrade/uninstall/offline install, file permissions, AppArmor/system logs và Security Advisor/Antivirus.
-- Ma trận test DSM 7.0/7.1 và DSM mới hơn trên mỗi platform công bố. Thiếu thiết bị test phải ghi chưa verify và chặn release target đó, không suy từ một NAS sang toàn matrix.
+- RFC 6238 vectors for all three algorithms; boundary time, period, digits, Unicode parser/serializer, and URI round-trip.
+- AES-GCM tamper/wrong-key/AAD rejection, nonce handling, KDF limits, and backup round-trip.
+- Two regular users and one user without app privilege: isolation, IDOR, share/revoke, secret/export denial, account recreation, and disabled account.
+- CSRF, metadata XSS, expired DSM session, PIN lockout/restart, polling does not extend idle, close/reopen, and stop enforcement.
+- Import duplicate/error rollback, concurrent writes, SQLite busy, disk full, migration failure, missing DEK, and restore after upgrade.
+- Lifecycle install/start/stop/restart/upgrade/uninstall/offline install, file permissions, AppArmor/system logs, and Security Advisor/Antivirus.
+- DSM 7.0/7.1 and newer DSM test matrix on every published platform. Missing test hardware must be marked unverified and block that target’s release; do not extrapolate from one NAS to the whole matrix.
 
-## 12. Publish Package Center
+## 12. Package Center publish
 
-Tên OTPManager là tên đã chọn, chưa được Synology xác nhận/reserve. Free không đồng nghĩa open-source; license dự án cần chủ sở hữu chọn trước public release. Không tự chấp nhận thỏa thuận pháp lý hoặc submit thay người dùng.
+The OTPManager name is chosen but not Synology-confirmed/reserved. Free does not mean open-source; the project license must be chosen by the owner before public release. Do not unilaterally accept legal agreements or submit on the user’s behalf.
 
-Chuẩn bị SPK/checksums, description/changelog, screenshots dùng dữ liệu giả, manual/test scenarios, compatibility matrix, website/support email, privacy statement, dependency licenses và security maintenance policy. Mô tả rõ đây là TOTP vault, không phải tính năng bật 2FA đăng nhập DSM.
+Prepare SPK/checksums, description/changelog, screenshots with fake data, manual/test scenarios, compatibility matrix, website/support email, privacy statement, dependency licenses, and security maintenance policy. Clearly describe this as a TOTP vault, not DSM login 2FA enablement.
 
-Theo guideline hiện tại: apply developer, chấp nhận Distribution Agreement/Guideline, submit package, Synology review scripts và chức năng trên DSM/model, sửa theo feedback, sau đó mới publish. Không cam kết được duyệt hoặc thời hạn. Free không chuyển sang Paid theo guideline đã tra.
+Per current guidelines: apply as developer, accept Distribution Agreement/Guideline, submit package, Synology reviews scripts and function on DSM/model, fix per feedback, then publish. Do not promise approval or timeline. Free does not convert to Paid under the reviewed guideline.
 
-Nguồn:
+Sources:
 
 - [DSM Developer Guide](https://help.synology.com/developer-guide/)
 - [Application authentication](https://help.synology.com/developer-guide/integrate_dsm/web_authentication.html)
@@ -279,10 +279,10 @@ Nguồn:
 - [Developer application](https://www.synology.com/en-global/support/developer#apply)
 - [Distribution agreement](https://www.synology.com/en-us/company/legal/Pkg_Center_Dev_Distri_Agreement)
 - [Python version lifecycle](https://devguide.python.org/versions/)
-- [DSM release notes — runtime hệ thống](https://www.synology.com/en-global/releaseNote/DSM)
+- [DSM release notes — system runtime](https://www.synology.com/en-global/releaseNote/DSM)
 
-## 13. Phạm vi và trạng thái
+## 13. Scope and status
 
-MVP gồm native UI, TOTP CRUD/search, PIN, share view, plain/encrypted backup, multi-platform SPK và CI. Không gồm HOTP, QR camera, cloud sync, share manage, public sharing, LDAP/domain, tự động reset PIN hoặc deploy NAS từ CI.
+MVP includes native UI, TOTP CRUD/search, PIN, view share, plain/encrypted backup, multi-platform SPK, and CI. Out of scope: HOTP, QR camera, cloud sync, share manage, public sharing, LDAP/domain, automatic PIN reset, or deploying to NAS from CI.
 
-Đây là kế hoạch đã hợp nhất, không còn bản nháp cũ hoặc quyết định noarch. Chưa implement, cài dependency, kết nối NAS, commit/push hay submit marketplace. Bước thực thi đầu tiên là compatibility gate; bản patch/runtime dependency chính xác chỉ được khóa từ bằng chứng build và security review, không bịa phiên bản để điền kế hoạch.
+This is the consolidated plan; no older drafts or noarch decisions remain. Not yet implemented, dependencies not installed, NAS not connected, no commit/push or marketplace submit. First execution step is the compatibility gate; exact patch/runtime dependency versions are locked only from build evidence and security review, not invented to fill the plan.

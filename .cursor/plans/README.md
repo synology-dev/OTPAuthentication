@@ -1,21 +1,21 @@
 # Plans
 
-Thư mục kế hoạch triển khai / kiến trúc cho package Synology **OTP Authentication** (`OTPAuthentication`).
+Deployment / architecture plan directory for the Synology **OTP Authentication** package (`OTPAuthentication`).
 
-## Bản chính
+## Canonical plan
 
-| File | Vai trò |
-|------|---------|
-| [synology_otp_package_3471a2a5.plan.md](synology_otp_package_3471a2a5.plan.md) | **Kế hoạch chính** (canonical) — kiến trúc, lifecycle SPK, CI, verification, publication |
+| File | Role |
+|------|------|
+| [synology_otp_package_3471a2a5.plan.md](synology_otp_package_3471a2a5.plan.md) | **Main plan** (canonical) — architecture, SPK lifecycle, CI, verification, publication |
 
-## Liên quan
+## Related
 
-- Hành vi UI/API sống (checklist test): [`docs/logic-spec.md`](../../docs/logic-spec.md)
-- Hướng dẫn agent: [`AGENTS.md`](../../AGENTS.md)
+- Living UI/API behavior (test checklist): [`docs/logic-spec.md`](../../docs/logic-spec.md)
+- Agent guide: [`AGENTS.md`](../../AGENTS.md)
 - Repo: [synology-dev/OTPAuthentication](https://github.com/synology-dev/OTPAuthentication)
 
-## Quy ước
+## Conventions
 
-- Agent **không sửa** `.cursor/plans/*` trừ khi user yêu cầu rõ.
-- Không tạo plan trùng; quyết định hành vi mới ghi vào `docs/logic-spec.md`.
-- Thư mục này được track trong git (`!.cursor/plans/**` trong `.gitignore`).
+- Agents **must not edit** `.cursor/plans/*` unless the user explicitly asks.
+- Do not create duplicate plans; record new behavior decisions in `docs/logic-spec.md`.
+- This directory is tracked in git (`!.cursor/plans/**` in `.gitignore`).
