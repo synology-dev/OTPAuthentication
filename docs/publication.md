@@ -3,7 +3,7 @@
 - [ ] Owner accepts Synology Developer Distribution Agreement
 - [ ] Apply via Synology developer form
 - [ ] Confirm package id `OTPAuthentication` with Synology (not reserved)
-- [ ] Choose project license text for public distribution (see `LICENSE`)
+- [x] Choose project license text for public distribution (see `LICENSE`)
 - [x] Build all required CPU SPKs; attach SHA256 sums (`v1.0.0` release)
 - [x] GitHub Release download URL ready (`https://github.com/synology-dev/OTPAuthentication/releases/tag/v1.0.0`)
 - [ ] Description/changelog/screenshots (synthetic data only) — see `docs/screenshots/` (`02-my-otps.png` is privacy-blurred live vault; prefer synthetic re-capture before submit)

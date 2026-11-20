@@ -1,14 +1,71 @@
-Copyright (c) KhoaZero123.
+Copyright (c) 2026 KhoaZero123.
 
-All rights reserved.
+OTP Authentication — Proprietary Source-Available License
 
-This software is intended for free distribution through Synology Package Center
-and GitHub releases. The copyright holder will choose the final public license
-text before Package Center submission.
+## Summary
 
-Until a license is selected and published, redistribution outside the copyright
-holder's channels requires prior written permission.
+You may use this software free of charge and contribute improvements to the
+official project. You may not redistribute it or sell it (or otherwise
+commercialize distribution) in any form.
+
+## Definitions
+
+"Software" means this source code, binaries, Synology packages (.spk),
+documentation, and related materials in this repository and official releases.
+"Copyright Holder" means KhoaZero123.
+"Official Channels" means the Copyright Holder's GitHub repository/releases for
+this project and Synology Package Center distribution authorized by the
+Copyright Holder.
+
+## Granted permissions
+
+Subject to the restrictions below, the Copyright Holder grants you a
+non-exclusive, non-transferable, royalty-free permission to:
+
+1. Install and use the Software, free of charge, for personal or organizational
+   purposes.
+2. Modify the Software for your own private or internal use.
+3. Submit contributions (including pull requests, patches, and issue reports)
+   to the Official Channels.
+
+## Contributions
+
+By submitting a contribution, you grant the Copyright Holder a perpetual,
+worldwide, royalty-free, irrevocable license to use, reproduce, modify,
+sublicense, and distribute that contribution as part of the Software under
+this license (or a successor chosen by the Copyright Holder). You represent
+that you have the right to grant this license.
+
+## Restrictions
+
+Except with prior written permission from the Copyright Holder, you may not:
+
+1. Redistribute, publish, re-host, mirror, sublicense, or otherwise make the
+   Software (original or modified, source or binary, including .spk files)
+   available to third parties outside the Official Channels — whether free or
+   paid.
+2. Sell, rent, lease, charge for, or otherwise commercially exploit the
+   Software or its distribution in any form, including paid bundles, paid
+   forks, paid mirrors, or paid packaging/services whose primary product is
+   redistribution of the Software.
+3. Remove or alter copyright, license, or attribution notices.
+
+Private/internal use and modification do not authorize external redistribution.
+
+## No trademark license
+
+This license does not grant rights to use the names, logos, or trademarks of
+the Copyright Holder or "OTP Authentication" except as needed to identify the
+unmodified Software obtained from Official Channels.
+
+## Disclaimer
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+COPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER LIABILITY ARISING
+FROM USE OF THE SOFTWARE.
+
+## Reservation of rights
+
+All rights not expressly granted are reserved by the Copyright Holder.

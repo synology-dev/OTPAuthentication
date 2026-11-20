@@ -43,4 +43,4 @@ PIN locks the app UI/API. Secrets are encrypted at rest with a package DEK. Root
 
 ## License
 
-See [LICENSE](LICENSE). Final open-source or proprietary text is chosen by the publisher before Package Center submission. Free distribution intended.
+Proprietary source-available — free to use and contribute; redistribution and paid commercialization are not permitted. See [LICENSE](LICENSE).
