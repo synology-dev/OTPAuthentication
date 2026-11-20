@@ -10,7 +10,15 @@ import time
 from typing import Any, Dict, List, Optional, Tuple
 
 from . import constants as C
-from .auth import AuthError, DsmIdentity, authenticate_request, resolve_local_username, verify_dsm_password
+from .auth import (
+    AuthError,
+    DsmIdentity,
+    authenticate_request,
+    list_local_usernames,
+    lookup_dsm_uid,
+    resolve_local_username,
+    verify_dsm_password,
+)
 from .crypto import (
     decrypt_backup_payload,
     decrypt_secret,
@@ -560,17 +568,18 @@ class OTPService:
         username = username.strip()
         if not username or username.lower() == identity.username.lower():
             raise AppError("invalid_recipient", "Invalid recipient")
+        if not resolve_local_username(username):
+            raise AppError("invalid_recipient", "User not found")
         with self.db.txn() as conn:
             user = self._session_user(conn, identity, unlock_token, interactive=True)
             row = conn.execute("SELECT * FROM entries WHERE id=?", (entry_id,)).fetchone()
             if not row or row["owner_id"] != user["id"]:
                 raise AppError("forbidden", "Not allowed", 403)
-            grantee = get_user_by_username(conn, username)
-            if grantee is None or not grantee["pin_hash"]:
-                # Recipient must have initialized OTP Authentication
-                if not resolve_local_username(username):
-                    raise AppError("invalid_recipient", "User not found")
-                raise AppError("recipient_not_ready", "User has not set up OTP Authentication yet")
+            # Recipient need not have opened the app or set a PIN (PIN is optional).
+            # Always key by DSM uid — never reuse a stale same-name row (e.g. lab dev:user).
+            grantee = ensure_user(conn, lookup_dsm_uid(username), username)
+            if not grantee["pin_hash"] and not self._pin_disabled(conn, grantee["id"]):
+                self._set_pin_disabled(conn, grantee["id"], True)
             try:
                 conn.execute(
                     "INSERT INTO shares(entry_id, grantee_id, shared_at) VALUES (?, ?, ?)",
@@ -605,11 +614,26 @@ class OTPService:
             if not resolve_local_username(username):
                 raise AppError("invalid_recipient", "User not found")
             grantee = get_user_by_username(conn, username)
+            # ready = local DSM user exists; PIN/app setup is not required.
             return {
                 "username": username,
-                "ready": bool(grantee and grantee["pin_hash"]),
+                "ready": True,
+                "exists_in_vault": bool(grantee),
                 "permission": "view",
             }
+
+    def list_share_users(self, unlock_token: str, query: str = "") -> dict:
+        """Type-ahead candidates for Share username (exclude self)."""
+        identity = self.identity()
+        with self.db.connect() as conn:
+            self._session_user(conn, identity, unlock_token, interactive=False)
+        me = identity.username.lower()
+        items = [
+            {"username": name}
+            for name in list_local_usernames(query, limit=30)
+            if name.lower() != me
+        ]
+        return {"items": items}
 
     def export_plain(self, unlock_token: str, dsm_password: str, entry_ids: Optional[List[int]] = None) -> dict:
         accounts = self._owned_accounts_for_export(unlock_token, dsm_password, entry_ids)

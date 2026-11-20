@@ -72,7 +72,7 @@ SYNO.SDS.OTPAuthentication.AppWindow = Ext.extend(SYNO.SDS.AppWindow, {
     var link = document.createElement("link");
     link.id = "otpauthentication-css";
     link.rel = "stylesheet";
-    link.href = "/webman/3rdparty/OTPAuthentication/style.css?v=20261120b";
+    link.href = "/webman/3rdparty/OTPAuthentication/style.css?v=20261120d";
     document.head.appendChild(link);
   },
 
@@ -1139,6 +1139,7 @@ SYNO.SDS.OTPAuthentication.AppWindow = Ext.extend(SYNO.SDS.AppWindow, {
   openShareDialog: function (rec) {
     var me = this;
     var store = new Ext.data.JsonStore({ fields: ["id", "username", "permission", "shared_at"], data: [] });
+    var userStore = new Ext.data.JsonStore({ fields: ["username"], data: [] });
     var grid = new Ext.grid.GridPanel({
       height: 180,
       store: store,
@@ -1148,7 +1149,10 @@ SYNO.SDS.OTPAuthentication.AppWindow = Ext.extend(SYNO.SDS.AppWindow, {
         { header: "User", dataIndex: "username", width: 160 },
         { header: "Permission", dataIndex: "permission", width: 80 },
         {
-          header: "", width: 70, renderer: function () { return "Revoke"; }
+          header: "", width: 78,
+          renderer: function () {
+            return '<a href="#" class="otpauthentication-link-action" onclick="return false;">Revoke</a>';
+          }
         }
       ],
       listeners: {
@@ -1170,6 +1174,37 @@ SYNO.SDS.OTPAuthentication.AppWindow = Ext.extend(SYNO.SDS.AppWindow, {
         store.loadData(data.items || []);
       });
     }
+    function loadUserSuggestions(query) {
+      me.api("share.cgi", { method: "list-users", query: query || "" }, true).then(function (data) {
+        userStore.loadData(data.items || []);
+      }).catch(function () { /* keep prior suggestions */ });
+    }
+    var userCombo = new Ext.form.ComboBox({
+      fieldLabel: "Username",
+      name: "username",
+      store: userStore,
+      displayField: "username",
+      valueField: "username",
+      mode: "local",
+      triggerAction: "all",
+      typeAhead: true,
+      forceSelection: false,
+      selectOnFocus: true,
+      allowBlank: false,
+      minChars: 1,
+      maxHeight: 220,
+      listClass: "otpauthentication-combo-list",
+      emptyText: "Type a DSM username",
+      listeners: {
+        focus: function () { loadUserSuggestions(this.getRawValue() || ""); },
+        keyup: function (field) {
+          if (field._suggestTimer) { window.clearTimeout(field._suggestTimer); }
+          field._suggestTimer = window.setTimeout(function () {
+            loadUserSuggestions(field.getRawValue() || "");
+          }, 200);
+        }
+      }
+    });
     var win = new Ext.Window({
       title: "Share: " + rec.get("issuer"),
       modal: true,
@@ -1180,7 +1215,7 @@ SYNO.SDS.OTPAuthentication.AppWindow = Ext.extend(SYNO.SDS.AppWindow, {
         grid,
         {
           xtype: "form", bodyCssClass: "otpauthentication-dialog-body", bodyStyle: "padding:12px 0 0", items: [
-            { xtype: "textfield", fieldLabel: "Username", name: "username", allowBlank: false },
+            userCombo,
             me._dialogErrorItem()
           ]
         }
@@ -1188,15 +1223,13 @@ SYNO.SDS.OTPAuthentication.AppWindow = Ext.extend(SYNO.SDS.AppWindow, {
       buttons: [
         { text: "Add share", cls: "otpauthentication-btn-primary", handler: function () {
           me._clearDialogError(win);
-          var username = win.items.get(1).getForm().findField("username").getValue();
-          me.api("share.cgi", { method: "resolve-recipient", username: username }, true).then(function (info) {
-            if (!info.ready) {
-              me._setDialogError(win, "User has not set up OTP Authentication yet");
-              return;
-            }
-            return me.api("share.cgi", { method: "add", entry_id: rec.get("id"), username: info.username }, true);
-          }).then(function (r) {
-            if (r === undefined) { return; }
+          var username = (userCombo.getValue() || userCombo.getRawValue() || "").trim();
+          if (!username) {
+            me._setDialogError(win, "Username is required");
+            return;
+          }
+          me.api("share.cgi", { method: "add", entry_id: rec.get("id"), username: username }, true).then(function () {
+            userCombo.reset();
             load();
             me.reloadList(false);
           }).catch(function (err) { me._setDialogError(win, err); });
@@ -1206,6 +1239,7 @@ SYNO.SDS.OTPAuthentication.AppWindow = Ext.extend(SYNO.SDS.AppWindow, {
     });
     win.show();
     load();
+    loadUserSuggestions("");
   },
 
   revealSecret: function (rec) {

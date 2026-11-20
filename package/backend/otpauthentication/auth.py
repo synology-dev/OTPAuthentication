@@ -114,6 +114,9 @@ def resolve_local_username(username: str) -> bool:
     username = username.strip()
     if not username:
         return False
+    # Lab/tests: synthetic DSM users (dev:name) are always resolvable by name.
+    if os.environ.get(C.ENV_SKIP_DSM_AUTH) == "1":
+        return True
     try:
         import pwd
 
@@ -135,6 +138,61 @@ def resolve_local_username(username: str) -> bool:
         except (OSError, subprocess.TimeoutExpired):
             return False
     return False
+
+
+def lookup_dsm_uid(username: str) -> str:
+    """Stable vault key for a local DSM username."""
+    username = username.strip()
+    if os.environ.get(C.ENV_SKIP_DSM_AUTH) == "1":
+        return f"dev:{username}"
+    return _lookup_uid(username) or f"name:{username}"
+
+
+def list_local_usernames(query: str = "", limit: int = 30) -> list:
+    """Local DSM usernames for share type-ahead (best-effort)."""
+    query = (query or "").strip().lower()
+    limit = max(1, min(int(limit or 30), 100))
+    names: list = []
+
+    if os.environ.get(C.ENV_SKIP_DSM_AUTH) == "1":
+        return []
+
+    synouser = "/usr/syno/sbin/synouser"
+    if os.path.exists(synouser):
+        try:
+            proc = subprocess.run(
+                [synouser, "--enum", "local"],
+                capture_output=True,
+                text=True,
+                timeout=8,
+                check=False,
+            )
+            raw = (proc.stdout or "").strip()
+            if proc.returncode == 0 and raw:
+                # Output is typically space-separated usernames on one line.
+                for part in raw.replace(",", " ").split():
+                    name = part.strip()
+                    if name and name not in names:
+                        names.append(name)
+        except (OSError, subprocess.TimeoutExpired):
+            pass
+
+    if not names:
+        try:
+            import pwd
+
+            for ent in pwd.getpwall():
+                if ent.pw_uid < 1000 or ent.pw_name in {"nobody", "nfsnobody"}:
+                    continue
+                if ent.pw_name not in names:
+                    names.append(ent.pw_name)
+        except Exception:
+            pass
+
+    if query:
+        names = [n for n in names if query in n.lower()]
+    names.sort(key=lambda n: n.lower())
+    return names[:limit]
 
 
 def verify_dsm_password(environ: dict, password: str) -> bool:

@@ -135,6 +135,8 @@ def dispatch(svc: OTPService, name: str, payload: dict, method: str, environ: di
     if name == "share":
         if action == "list":
             return svc.share_list(unlock, int(payload["entry_id"]))
+        if action == "list-users":
+            return svc.list_share_users(unlock, payload.get("query", ""))
         _require_post(method)
         _require_csrf(svc, unlock, csrf)
         if action == "add":

@@ -96,7 +96,14 @@ Model: **PIN = UI/API lock** (grants unlock session). OTP ciphertext uses packag
 | E6 | Plaintext checkbox: checkbox vertically aligned with first line of label text |
 | E7 | Scope **Selected**: export selected **owned** entries (`ids`); ≥1 owned selected → dialog defaults to Selected; **0** selected (or only shared) → default **All owned**. Toolbar Export and context menu Export use the same dialog | OM-49 |
 
-## 7. Package icon
+## 7. Share
+
+| ID | Behavior |
+|----|----------|
+| S1 | Share to any **local DSM user** (not self). Recipient need **not** have opened the app or set a PIN; create vault user row if missing and mark `pin_disabled` so they can open without PIN | PIN is optional |
+| S2 | Share dialog Username: type-ahead suggestions from local DSM usernames (exclude self); filter as user types | |
+
+## 8. Package icon
 
 | ID | Behavior |
 |----|----------|
@@ -104,10 +111,10 @@ Model: **PIN = UI/API lock** (grants unlock session). OTP ciphertext uses packag
 | P2 | Rounded corners like DSM apps (Control Panel…), transparent outside corners |
 | P3 | `spk/PACKAGE_ICON.PNG` (72), `PACKAGE_ICON_256.PNG` (256) + `package/ui/images/icon_*.png` |
 
-## 8. Out of scope / not decided in this spec
+## 9. Out of scope / not decided in this spec
 
 - Recovery key / security questions (suggested; **not** chosen — chose Forgot PIN + DSM password).
-- Share / backup UI polish beyond the shared skin.
+- Share / backup UI polish beyond username type-ahead (S2).
 - DSM user without app privilege → denied (separate smoke verification).
 
 ## Short decision history
@@ -140,3 +147,4 @@ Model: **PIN = UI/API lock** (grants unlock session). OTP ciphertext uses packag
 - 2026-11-20: V12 — no PIN: idle/401 does not open Unlock PIN; `unauthorized` → DSM session expired message.
 - 2026-11-20: V12b — Unlock dialog always re-checks `pin.status`; stale client `pinConfigured` must not show Unlock (OM-52).
 - 2026-11-20: OM-52 follow-up — auth recovery always uses `pin.status` (ignore stale client `pinConfigured`).
+- 2026-11-20: S1/S2 — share without requiring recipient PIN/setup; username type-ahead.

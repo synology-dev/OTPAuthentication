@@ -56,6 +56,36 @@ def test_owner_share_and_grantee_restrictions(env):
     assert shared2["items"] == []
 
 
+def test_share_to_user_without_app_setup_or_pin(env):
+    """S1: share works when recipient never opened the app / has no PIN."""
+    owner = _svc("nas")
+    owner.setup_pin("", "")
+    unlock = owner.open_nopin()
+    entry_id = owner.create_entry(
+        unlock["unlock_token"],
+        {"issuer": "ShareMe", "account": "a@x.com", "secret": "JBSWY3DPEHPK3PXP"},
+        request_id="share-nopin-1",
+    )["id"]
+
+    info = owner.resolve_recipient(unlock["unlock_token"], "khoa")
+    assert info["ready"] is True
+
+    owner.share_add(unlock["unlock_token"], entry_id, "khoa")
+    shares = owner.share_list(unlock["unlock_token"], entry_id)
+    assert any(s["username"].lower() == "khoa" for s in shares["items"])
+
+    # Recipient opens with no PIN (pin_disabled set by share_add).
+    khoa = _svc("khoa")
+    st = khoa.pin_status()
+    assert st["pin_set"] is False
+    assert st["pin_disabled"] is True
+    khoa_u = khoa.open_nopin()
+    shared = khoa.list_entries(khoa_u["unlock_token"], scope="shared")
+    assert any(i["id"] == entry_id for i in shared["items"])
+    codes = khoa.codes(khoa_u["unlock_token"], [entry_id])
+    assert codes["items"][0]["code"]
+
+
 def test_batch_delete_entries(env):
     alice = _svc("alice")
     alice.setup_pin("123456", "123456")

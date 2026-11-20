@@ -49,6 +49,22 @@
   color: var(--otp-warn);
 }
 
+/* Clickable grid/text actions (e.g. Share → Revoke) */
+a.otpauthentication-link-action {
+  color: var(--otp-blue) !important;
+  text-decoration: none !important;
+  font-weight: 500;
+  cursor: pointer !important;
+  border-bottom: 1px solid transparent;
+}
+
+a.otpauthentication-link-action:hover,
+a.otpauthentication-link-action:focus {
+  color: var(--otp-blue-hover) !important;
+  text-decoration: underline !important;
+  border-bottom-color: var(--otp-blue-hover);
+}
+
 /* ----- Toolbar ----- */
 .otpauthentication-toolbar.x-toolbar,
 .otpauthentication-wrap .otpauthentication-toolbar {
@@ -756,26 +772,42 @@
   margin: 4px 8px !important;
 }
 
-/* Combo dropdown lists owned by OTP dialogs */
-.otpauthentication-combo-list {
+/* Combo dropdown lists owned by OTP dialogs (Ext appends list to body) */
+.otpauthentication-combo-list,
+.x-combo-list.otpauthentication-combo-list,
+.x-layer.otpauthentication-combo-list {
   border: 1px solid var(--otp-border-strong) !important;
-  border-color: var(--otp-border-strong) !important;
   border-radius: var(--otp-radius) !important;
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12) !important;
   outline: none !important;
-  background: var(--otp-bg) !important;
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+  z-index: 20000 !important;
+}
+
+.otpauthentication-combo-list .x-combo-list-inner {
+  background: #ffffff !important;
+  background-color: #ffffff !important;
 }
 
 .otpauthentication-combo-list .x-combo-list-item {
-  padding: 6px 10px !important;
-  font-size: 12px;
-  color: var(--otp-text);
+  padding: 7px 12px !important;
+  line-height: 18px !important;
+  font-size: 12px !important;
+  color: var(--otp-text) !important;
+  border: 0 !important;
+  background: #ffffff !important;
 }
 
+.otpauthentication-combo-list .x-combo-list-item.x-combo-selected,
 .otpauthentication-combo-list .x-combo-selected {
   background: var(--otp-blue-soft) !important;
   border-color: transparent !important;
   color: var(--otp-blue) !important;
+}
+
+.otpauthentication-combo-list .x-combo-list-item:hover {
+  background: var(--otp-row-hover) !important;
 }
 
 /* ----- Log Center–style paging bar ----- */
